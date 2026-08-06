@@ -295,7 +295,7 @@ export default function Landing() {
   /* ------------------------------------------------------------------ */
 
   return (
-    <div ref={root}>
+    <div id="landing-root" ref={root}>
       <div className="nav-blur" aria-hidden="true" />
 
       <header className="nav" ref={navRef}>
@@ -347,11 +347,19 @@ export default function Landing() {
             players who play to win.
           </p>
           <div className="hero-actions">
-            <button className="btn btn-lime" onClick={openBooking}>
+            <button
+              type="button"
+              className="btn btn-lime"
+              onClick={(e) => openBooking(e.currentTarget)}
+            >
               RESERVE A COURT
               <i className="btn-ico" aria-hidden="true" />
             </button>
-            <button className="btn btn-ghost" onClick={openBooking}>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={(e) => openBooking(e.currentTarget)}
+            >
               Join the Club
               <i className="btn-ico light" aria-hidden="true" />
             </button>
@@ -383,7 +391,11 @@ export default function Landing() {
                 competing in the veterans league there&rsquo;s a court waiting for
                 you.
               </p>
-              <button className="btn btn-ghost reveal" onClick={openBooking}>
+              <button
+                type="button"
+                className="btn btn-ghost reveal"
+                onClick={(e) => openBooking(e.currentTarget)}
+              >
                 Join the Club
                 <i className="btn-ico light" aria-hidden="true" />
               </button>
@@ -524,7 +536,11 @@ export default function Landing() {
                 Caught in action. From match point to post-game chills. This is
                 what the FORT lifestyle looks like.
               </p>
-              <button className="btn btn-lime reveal" onClick={openBooking}>
+              <button
+                type="button"
+                className="btn btn-lime reveal"
+                onClick={(e) => openBooking(e.currentTarget)}
+              >
                 CONTACT US
                 <i className="btn-ico" aria-hidden="true" />
               </button>

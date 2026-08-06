@@ -17,12 +17,25 @@ export default function BookingOverlay() {
 
   useEffect(
     () =>
-      subscribeBooking(() => {
-        restoreTo.current = document.activeElement as HTMLElement | null;
+      subscribeBooking((trigger) => {
+        restoreTo.current =
+          trigger ?? (document.activeElement as HTMLElement | null);
         setOpen(true);
       }),
     [],
   );
+
+  /* take the page behind the overlay out of the tab order and off the a11y tree */
+  useEffect(() => {
+    if (!open) return;
+    const landing = document.getElementById("landing-root");
+    if (!landing) return;
+
+    landing.inert = true;
+    return () => {
+      landing.inert = false;
+    };
+  }, [open]);
 
   /* lock the page behind the overlay, and put it back exactly as it was */
   useEffect(() => {
@@ -50,7 +63,11 @@ export default function BookingOverlay() {
       window.scrollTo(0, scrollY.current);
       // the lock changed document height, so every pin's cached start/end is stale
       ScrollTrigger.refresh();
-      restoreTo.current?.focus?.();
+      // WebKit leaves activeElement at document.body after a button click;
+      // focusing body is a no-op there but guard it explicitly regardless.
+      if (restoreTo.current && restoreTo.current !== document.body) {
+        restoreTo.current.focus?.();
+      }
     };
   }, [open]);
 
@@ -105,7 +122,12 @@ export default function BookingOverlay() {
       <div className="bk-panel" ref={panel}>
         <header className="bk-bar">
           <span className="bk-step-count">RESERVE A COURT</span>
-          <button className="bk-close" onClick={close} aria-label="Close">
+          <button
+            type="button"
+            className="bk-close"
+            onClick={close}
+            aria-label="Close"
+          >
             <span />
             <span />
           </button>
