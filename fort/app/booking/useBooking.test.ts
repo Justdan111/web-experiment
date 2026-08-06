@@ -88,6 +88,26 @@ describe("bookingReducer", () => {
   it("resets back to the initial state", () => {
     expect(bookingReducer(filled, { type: "RESET" })).toEqual(initialBooking);
   });
+
+  it("does not step back from the confirmation screen", () => {
+    const confirmed = bookingReducer(filled, {
+      type: "CONFIRM",
+      reference: "FORT-A1B2C",
+    });
+    const afterBack = bookingReducer(confirmed, { type: "BACK" });
+    expect(afterBack.step).toBe(4);
+    expect(afterBack.reference).toBe("FORT-A1B2C");
+  });
+
+  it("clears reference when resetting from confirmed state", () => {
+    const confirmed = bookingReducer(filled, {
+      type: "CONFIRM",
+      reference: "FORT-A1B2C",
+    });
+    const reset = bookingReducer(confirmed, { type: "RESET" });
+    expect(reset).toEqual(initialBooking);
+    expect(reset.reference).toBeNull();
+  });
 });
 
 describe("firstIncompleteStep", () => {
@@ -107,6 +127,19 @@ describe("firstIncompleteStep", () => {
 
   it("returns the details step once everything is chosen", () => {
     expect(firstIncompleteStep(filled)).toBe(3);
+  });
+
+  it("returns 4 for a confirmed state", () => {
+    const confirmed = { ...filled, reference: "FORT-A1B2C" };
+    expect(firstIncompleteStep(confirmed)).toBe(4);
+  });
+
+  it("still returns 3 for a fully-selected but unconfirmed state", () => {
+    const unconfirmed = {
+      ...filled,
+      reference: null,
+    };
+    expect(firstIncompleteStep(unconfirmed)).toBe(3);
   });
 });
 

@@ -46,6 +46,8 @@ export function bookingReducer(
     case "SET_FIELD":
       return { ...state, [action.field]: action.value };
     case "BACK":
+      // Confirmation is terminal; cannot go back from step 4
+      if (state.step === 4) return state;
       return { ...state, step: Math.max(0, state.step - 1) as Step };
     case "CONFIRM":
       return { ...state, reference: action.reference, step: 4 };
@@ -58,6 +60,7 @@ export function bookingReducer(
 
 /** Where the flow should sit given what has actually been chosen. */
 export function firstIncompleteStep(state: BookingState): Step {
+  if (state.reference !== null) return 4;
   if (state.courtId === null) return 0;
   if (state.date === null) return 1;
   if (state.hour === null) return 2;
