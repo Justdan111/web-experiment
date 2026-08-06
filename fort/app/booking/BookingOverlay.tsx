@@ -1,25 +1,55 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { subscribeBooking } from "./bus";
+import {
+  bookingReducer,
+  firstIncompleteStep,
+  initialBooking,
+} from "./useBooking";
+import CourtStep from "./steps/CourtStep";
+import DateStep from "./steps/DateStep";
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+/** Selection lands, the highlight registers, then the flow moves on. */
+const ADVANCE_MS = 250;
+
 export default function BookingOverlay() {
   const [open, setOpen] = useState(false);
+  const [state, dispatch] = useReducer(bookingReducer, initialBooking);
+  const [now, setNow] = useState<Date | null>(null);
   const panel = useRef<HTMLDivElement>(null);
   const restoreTo = useRef<HTMLElement | null>(null);
   const scrollY = useRef(0);
+  const timer = useRef<number | null>(null);
 
   const close = useCallback(() => setOpen(false), []);
+
+  /** Delay the dispatch so the tile's selected state is visible before moving. */
+  const advance = useCallback((fn: () => void) => {
+    if (timer.current) window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(fn, ADVANCE_MS);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (timer.current) window.clearTimeout(timer.current);
+    },
+    [],
+  );
 
   useEffect(
     () =>
       subscribeBooking((trigger) => {
         restoreTo.current =
           trigger ?? (document.activeElement as HTMLElement | null);
+        // read the clock at open time — never at module scope, which would
+        // bake a stale "now" into the bundle
+        setNow(new Date());
+        dispatch({ type: "RESET" });
         setOpen(true);
       }),
     [],
@@ -104,13 +134,17 @@ export default function BookingOverlay() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, close]);
 
-  /* move focus into the panel once it exists */
+  /* move focus into the panel once it exists, and again on every step change */
   useEffect(() => {
     if (!open) return;
     panel.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
-  }, [open]);
+  }, [open, state.step]);
 
-  if (!open) return null;
+  if (!open || !now) return null;
+
+  // only reachable through a state bug, but it fails visibly instead of
+  // rendering a step with half its inputs missing
+  const step = Math.min(state.step, firstIncompleteStep(state));
 
   return (
     <div
@@ -121,7 +155,20 @@ export default function BookingOverlay() {
     >
       <div className="bk-panel" ref={panel}>
         <header className="bk-bar">
-          <span className="bk-step-count">RESERVE A COURT</span>
+          {step > 0 ? (
+            <button
+              type="button"
+              className="bk-back"
+              onClick={() => dispatch({ type: "BACK" })}
+            >
+              ← BACK
+            </button>
+          ) : (
+            <span className="bk-step-count">RESERVE A COURT</span>
+          )}
+          <span className="bk-step-count">
+            {String(step + 1).padStart(2, "0")} / 04
+          </span>
           <button
             type="button"
             className="bk-close"
@@ -132,7 +179,31 @@ export default function BookingOverlay() {
             <span />
           </button>
         </header>
-        <div className="bk-body" />
+
+        <div className="bk-rail" aria-hidden="true">
+          <span style={{ width: `${((step + 1) / 4) * 100}%` }} />
+        </div>
+
+        <div className="bk-body">
+          {step === 0 && (
+            <CourtStep
+              value={state.courtId}
+              onSelect={(courtId) =>
+                advance(() => dispatch({ type: "SELECT_COURT", courtId }))
+              }
+            />
+          )}
+          {step === 1 && state.courtId !== null && (
+            <DateStep
+              courtId={state.courtId}
+              now={now}
+              value={state.date}
+              onSelect={(date) =>
+                advance(() => dispatch({ type: "SELECT_DATE", date }))
+              }
+            />
+          )}
+        </div>
       </div>
     </div>
   );
