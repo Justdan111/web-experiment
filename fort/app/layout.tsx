@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { bbhBartle, interDisplay, jakob, satoshi } from "./fonts";
 import "./globals.css";
+import "./booking/booking.css";
 
 export const metadata: Metadata = {
   title: "FORT — ABUJA",

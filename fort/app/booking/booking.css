@@ -1,0 +1,80 @@
+/* ============================================================
+   BOOKING OVERLAY
+   ============================================================ */
+.bk {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--navy);
+  display: flex;
+  flex-direction: column;
+}
+
+.bk-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 1240px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 var(--pad);
+}
+
+.bk-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 26px 0;
+  flex: 0 0 auto;
+}
+
+.bk-step-count {
+  font-family: var(--font-satoshi), Inter, sans-serif;
+  font-size: 16px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+
+.bk-close {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+.bk-close span {
+  position: absolute;
+  left: 10px;
+  top: 21px;
+  width: 24px;
+  height: 2px;
+  background: #fff;
+  transition: background 0.25s ease;
+}
+.bk-close span:nth-child(1) {
+  transform: rotate(45deg);
+}
+.bk-close span:nth-child(2) {
+  transform: rotate(-45deg);
+}
+.bk-close:hover span {
+  background: var(--lime);
+}
+
+.bk-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+  padding-bottom: 40px;
+}
+
+@media (max-width: 900px) {
+  .bk-bar {
+    padding: 16px 0;
+  }
+}

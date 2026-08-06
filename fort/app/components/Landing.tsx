@@ -7,6 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import ParticleBall from "./ParticleBall";
 import RacketCursor from "./RacketCursor";
 import { COACHES, GALLERY, NAV, STATS, TESTIMONIALS } from "../content";
+import { openBooking } from "../booking/bus";
 
 const useIsomorphicLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -346,14 +347,14 @@ export default function Landing() {
             players who play to win.
           </p>
           <div className="hero-actions">
-            <a className="btn btn-lime" href="#pricing">
+            <button className="btn btn-lime" onClick={openBooking}>
               RESERVE A COURT
               <i className="btn-ico" aria-hidden="true" />
-            </a>
-            <a className="btn btn-ghost" href="#pricing">
+            </button>
+            <button className="btn btn-ghost" onClick={openBooking}>
               Join the Club
               <i className="btn-ico light" aria-hidden="true" />
-            </a>
+            </button>
           </div>
         </section>
 
@@ -382,10 +383,10 @@ export default function Landing() {
                 competing in the veterans league there&rsquo;s a court waiting for
                 you.
               </p>
-              <a className="btn btn-ghost reveal" href="#pricing">
+              <button className="btn btn-ghost reveal" onClick={openBooking}>
                 Join the Club
                 <i className="btn-ico light" aria-hidden="true" />
-              </a>
+              </button>
             </div>
             <div className="club-media reveal">
               <div className="arch">
@@ -523,10 +524,10 @@ export default function Landing() {
                 Caught in action. From match point to post-game chills. This is
                 what the FORT lifestyle looks like.
               </p>
-              <a className="btn btn-lime reveal" href="#footer">
+              <button className="btn btn-lime reveal" onClick={openBooking}>
                 CONTACT US
                 <i className="btn-ico" aria-hidden="true" />
-              </a>
+              </button>
             </div>
 
             <div className="pricing-cards">
