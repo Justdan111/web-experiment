@@ -11,12 +11,18 @@ import {
 import CourtStep from "./steps/CourtStep";
 import DateStep from "./steps/DateStep";
 import TimeStep from "./steps/TimeStep";
+import DetailsStep from "./steps/DetailsStep";
+import ConfirmStep from "./steps/ConfirmStep";
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /** Selection lands, the highlight registers, then the flow moves on. */
 const ADVANCE_MS = 250;
+
+/** Reference is generated here, not in the reducer, so the reducer stays pure. */
+const makeReference = (): string =>
+  `FORT-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
 
 export default function BookingOverlay() {
   const [open, setOpen] = useState(false);
@@ -156,7 +162,8 @@ export default function BookingOverlay() {
 
   // only reachable through a state bug, but it fails visibly instead of
   // rendering a step with half its inputs missing
-  const step = Math.min(state.step, firstIncompleteStep(state));
+  const done = state.step === 4;
+  const step = done ? 4 : Math.min(state.step, firstIncompleteStep(state));
 
   return (
     <div
@@ -167,7 +174,7 @@ export default function BookingOverlay() {
     >
       <div className="bk-panel" ref={panel}>
         <header className="bk-bar">
-          {step > 0 ? (
+          {step > 0 && !done ? (
             <button
               type="button"
               className="bk-back"
@@ -178,9 +185,11 @@ export default function BookingOverlay() {
           ) : (
             <span className="bk-step-count">RESERVE A COURT</span>
           )}
-          <span className="bk-step-count">
-            {String(step + 1).padStart(2, "0")} / 04
-          </span>
+          {!done && (
+            <span className="bk-step-count">
+              {String(step + 1).padStart(2, "0")} / 04
+            </span>
+          )}
           <button
             type="button"
             className="bk-close"
@@ -192,9 +201,11 @@ export default function BookingOverlay() {
           </button>
         </header>
 
-        <div className="bk-rail" aria-hidden="true">
-          <span style={{ width: `${((step + 1) / 4) * 100}%` }} />
-        </div>
+        {!done && (
+          <div className="bk-rail" aria-hidden="true">
+            <span style={{ width: `${((step + 1) / 4) * 100}%` }} />
+          </div>
+        )}
 
         <div className="bk-body">
           {step === 0 && (
@@ -224,6 +235,18 @@ export default function BookingOverlay() {
               onSelect={(hour) => advance(() => dispatch({ type: "SELECT_HOUR", hour }))}
             />
           )}
+          {step === 3 && (
+            <DetailsStep
+              state={state}
+              onField={(field, value) =>
+                dispatch({ type: "SET_FIELD", field, value })
+              }
+              onSubmit={() =>
+                dispatch({ type: "CONFIRM", reference: makeReference() })
+              }
+            />
+          )}
+          {done && <ConfirmStep state={state} onClose={close} />}
         </div>
       </div>
     </div>
