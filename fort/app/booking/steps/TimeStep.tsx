@@ -49,8 +49,9 @@ export default function TimeStep({
               className={`bk-slot${value === hour ? " is-on" : ""}${
                 taken ? " is-off" : ""
               }`}
-              onClick={() => onSelect(hour)}
-              disabled={taken}
+              onClick={() => {
+                if (!taken) onSelect(hour);
+              }}
               aria-disabled={taken}
               aria-pressed={value === hour}
               aria-label={
