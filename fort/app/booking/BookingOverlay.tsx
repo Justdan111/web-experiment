@@ -26,7 +26,14 @@ export default function BookingOverlay() {
   const scrollY = useRef(0);
   const timer = useRef<number | null>(null);
 
-  const close = useCallback(() => setOpen(false), []);
+  /** Overlay never unmounts on close — it just stops rendering — so a
+   * pending `advance` timeout would otherwise survive close and reopen and
+   * fire a stale dispatch into a freshly reset state. */
+  const close = useCallback(() => {
+    if (timer.current) window.clearTimeout(timer.current);
+    timer.current = null;
+    setOpen(false);
+  }, []);
 
   /** Delay the dispatch so the tile's selected state is visible before moving. */
   const advance = useCallback((fn: () => void) => {
@@ -44,6 +51,10 @@ export default function BookingOverlay() {
   useEffect(
     () =>
       subscribeBooking((trigger) => {
+        // guard against a timer left pending by any other route into open
+        // (not just `close`), so it can never survive into a new session
+        if (timer.current) window.clearTimeout(timer.current);
+        timer.current = null;
         restoreTo.current =
           trigger ?? (document.activeElement as HTMLElement | null);
         // read the clock at open time — never at module scope, which would
