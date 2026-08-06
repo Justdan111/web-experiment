@@ -10,6 +10,7 @@ import {
 } from "./useBooking";
 import CourtStep from "./steps/CourtStep";
 import DateStep from "./steps/DateStep";
+import TimeStep from "./steps/TimeStep";
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -212,6 +213,15 @@ export default function BookingOverlay() {
               onSelect={(date) =>
                 advance(() => dispatch({ type: "SELECT_DATE", date }))
               }
+            />
+          )}
+          {step === 2 && state.courtId !== null && state.date !== null && (
+            <TimeStep
+              courtId={state.courtId}
+              date={state.date}
+              now={now}
+              value={state.hour}
+              onSelect={(hour) => advance(() => dispatch({ type: "SELECT_HOUR", hour }))}
             />
           )}
         </div>
