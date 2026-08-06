@@ -208,8 +208,6 @@ canvas {
   white-space: nowrap;
   transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   border: 0;
-  cursor: pointer;
-  text-align: left;
 }
 .btn:hover {
   transform: translateY(-2px);
@@ -1053,5 +1051,55 @@ canvas {
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  /* FIX 1: paint() — the only thing that ever lifts .coach-slide off
+     opacity: 0 — lives inside the gsap.context() that Landing.tsx skips
+     creating under this same media condition. Mirror its effect here in
+     CSS so the JS bail and this fallback can never drift apart: turn the
+     pinned, cross-faded carousel into a plain static list. */
+  .coach-scroll {
+    position: static;
+  }
+  .coach-inner {
+    height: auto;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 64px;
+    padding: 40px 0;
+  }
+  .coach-slide {
+    position: static;
+    opacity: 1;
+    pointer-events: auto;
+    flex-direction: column !important;
+    justify-content: center;
+    gap: 28px;
+    padding: 0 20px;
+  }
+  .coach-slide .coach-photo,
+  .coach-slide .coach-meta {
+    transform: none;
+  }
+  .coach-photo {
+    width: 100%;
+  }
+  .coach-meta {
+    width: 100%;
+    margin: 0 !important;
+  }
+  /* the tabs jump-scroll into the pinned scene, which no longer exists,
+     and their rail-position effect depends on the skipped ScrollTrigger */
+  .coach-tabs {
+    display: none;
+  }
+
+  /* FIX 2: the ball's only centering is gsap.set({ xPercent: -50,
+     yPercent: -50 }) inside the same skipped context — give it a CSS
+     fallback so it doesn't hang off the bottom-right of the viewport. */
+  .bigball {
+    transform: translate(-50%, -50%);
   }
 }

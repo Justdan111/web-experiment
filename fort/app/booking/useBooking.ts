@@ -37,8 +37,8 @@ export function bookingReducer(
 ): BookingState {
   switch (action.type) {
     case "SELECT_COURT":
-      // a slot is only meaningful for one court, so changing court drops it
-      return { ...state, courtId: action.courtId, hour: null, step: 1 };
+      // a selection is only meaningful for one court, so changing court drops it
+      return { ...state, courtId: action.courtId, date: null, hour: null, step: 1 };
     case "SELECT_DATE":
       return { ...state, date: action.date, hour: null, step: 2 };
     case "SELECT_HOUR":

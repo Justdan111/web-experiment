@@ -29,7 +29,7 @@ export default function ConfirmStep({
       <p className="bk-done-note">
         Bring the reference to the front desk. See you on court, {state.name.trim().split(" ")[0]}.
       </p>
-      <button className="btn btn-lime" onClick={onClose}>
+      <button type="button" className="btn btn-lime" onClick={onClose}>
         DONE
         <i className="btn-ico" aria-hidden="true" />
       </button>

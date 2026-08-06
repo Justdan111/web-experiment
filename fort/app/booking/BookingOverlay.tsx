@@ -237,7 +237,11 @@ export default function BookingOverlay() {
             <button
               type="button"
               className="bk-back"
-              onClick={() => dispatch({ type: "BACK" })}
+              onClick={() => {
+                if (timer.current) window.clearTimeout(timer.current);
+                timer.current = null;
+                dispatch({ type: "BACK" });
+              }}
             >
               ← BACK
             </button>

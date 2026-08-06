@@ -33,9 +33,19 @@ describe("bookingReducer", () => {
     expect(next.step).toBe(1);
   });
 
-  it("clears a chosen hour when the court changes", () => {
+  it("clears the chosen date and hour when the court changes", () => {
     const next = bookingReducer(filled, { type: "SELECT_COURT", courtId: 7 });
+    expect(next.date).toBeNull();
     expect(next.hour).toBeNull();
+  });
+
+  it("leaves date and hour null when the court changes from a fully-selected state", () => {
+    const confirmed: BookingState = { ...filled, step: 4, reference: "FORT-A1B2C" };
+    const next = bookingReducer(confirmed, { type: "SELECT_COURT", courtId: 7 });
+    expect(next.courtId).toBe(7);
+    expect(next.date).toBeNull();
+    expect(next.hour).toBeNull();
+    expect(next.step).toBe(1);
   });
 
   it("clears a chosen hour when the date changes", () => {

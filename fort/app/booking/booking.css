@@ -71,6 +71,7 @@
   justify-content: center;
   min-height: 0;
   padding-bottom: 40px;
+  overflow-y: auto;
 }
 
 @media (max-width: 900px) {
@@ -212,7 +213,6 @@
   .bk-body {
     justify-content: flex-start;
     padding-top: 28px;
-    overflow-y: auto;
   }
 }
 
