@@ -423,7 +423,7 @@
     transition: none;
   }
   .bk-tile:hover:not(.is-off),
-  .bk-slot:hover:not(:disabled) {
+  .bk-slot:hover:not(.is-off) {
     transform: none;
   }
 }
