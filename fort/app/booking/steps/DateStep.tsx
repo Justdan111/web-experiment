@@ -30,8 +30,10 @@ export default function DateStep({
               className={`bk-tile bk-date${value === date ? " is-on" : ""}${
                 free === 0 ? " is-off" : ""
               }`}
-              onClick={() => onSelect(date)}
-              disabled={free === 0}
+              onClick={() => {
+                if (free > 0) onSelect(date);
+              }}
+              aria-disabled={free === 0}
               aria-pressed={value === date}
               aria-label={`${weekday} ${day} ${month}, ${free} slots free`}
             >
