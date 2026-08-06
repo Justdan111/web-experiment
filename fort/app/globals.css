@@ -965,8 +965,10 @@ canvas {
   .coach-photo {
     width: 100%;
   }
-  .coach-slide .coach-photo,
-  .coach-slide .coach-meta {
+  .coach-slide:nth-child(odd) .coach-photo,
+  .coach-slide:nth-child(odd) .coach-meta,
+  .coach-slide:nth-child(even) .coach-photo,
+  .coach-slide:nth-child(even) .coach-meta {
     transform: none;
   }
   .coach-meta {
@@ -1079,8 +1081,10 @@ canvas {
     gap: 28px;
     padding: 0 20px;
   }
-  .coach-slide .coach-photo,
-  .coach-slide .coach-meta {
+  .coach-slide:nth-child(odd) .coach-photo,
+  .coach-slide:nth-child(odd) .coach-meta,
+  .coach-slide:nth-child(even) .coach-photo,
+  .coach-slide:nth-child(even) .coach-meta {
     transform: none;
   }
   .coach-photo {
