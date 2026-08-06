@@ -416,3 +416,15 @@
     font-size: 17px;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .bk-tile,
+  .bk-slot,
+  .bk-rail span {
+    transition: none;
+  }
+  .bk-tile:hover:not(:disabled),
+  .bk-slot:hover:not(:disabled) {
+    transform: none;
+  }
+}

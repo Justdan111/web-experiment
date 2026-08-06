@@ -43,6 +43,20 @@ export default function Landing() {
   useIsomorphicLayoutEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
+    // Scroll-linked scrubbing is the exact motion this setting exists to stop.
+    // Bail before creating any scene; the page still reads fine statically.
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      gsap.set(".reveal", { autoAlpha: 1, y: 0, filter: "none" });
+      STATS.forEach((stat, i) => {
+        const el = document.querySelectorAll<HTMLElement>(".stat-num")[i];
+        if (el) el.textContent = stat.value + stat.suffix;
+      });
+      return;
+    }
+
     const ctx = gsap.context(() => {
       /* ---------- 1. the wordmark shrinks into the navbar ---------- */
       const brand = brandRef.current;

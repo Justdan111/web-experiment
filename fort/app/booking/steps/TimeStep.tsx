@@ -7,6 +7,7 @@ import {
   formatHour,
   slotState,
 } from "../availability";
+import { onGridKeyDown } from "../gridKeys";
 
 export default function TimeStep({
   courtId,
@@ -39,7 +40,7 @@ export default function TimeStep({
         COURT {court?.label} — {weekday} {day} {month}
       </p>
 
-      <div className="bk-grid bk-grid-time">
+      <div className="bk-grid bk-grid-time" onKeyDown={onGridKeyDown}>
         {states.map(({ hour, state }) => {
           const taken = state !== "open";
           return (

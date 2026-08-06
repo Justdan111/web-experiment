@@ -1,6 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
+import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { subscribeBooking } from "./bus";
 import {
@@ -27,8 +35,15 @@ const makeReference = (): string =>
 export default function BookingOverlay() {
   const [open, setOpen] = useState(false);
   const [state, dispatch] = useReducer(bookingReducer, initialBooking);
+
+  // only reachable through a state bug, but it fails visibly instead of
+  // rendering a step with half its inputs missing
+  const done = state.step === 4;
+  const step = done ? 4 : Math.min(state.step, firstIncompleteStep(state));
+
   const [now, setNow] = useState<Date | null>(null);
   const panel = useRef<HTMLDivElement>(null);
+  const shell = useRef<HTMLDivElement>(null);
   const restoreTo = useRef<HTMLElement | null>(null);
   const scrollY = useRef(0);
   const timer = useRef<number | null>(null);
@@ -158,16 +173,60 @@ export default function BookingOverlay() {
     panel.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
   }, [open, state.step]);
 
-  if (!open || !now) return null;
+  /* wipe the shell up from the bottom, then fade the panel in */
+  useLayoutEffect(() => {
+    if (!open || !shell.current || !panel.current) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-  // only reachable through a state bug, but it fails visibly instead of
-  // rendering a step with half its inputs missing
-  const done = state.step === 4;
-  const step = done ? 4 : Math.min(state.step, firstIncompleteStep(state));
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        shell.current,
+        { yPercent: 100 },
+        { yPercent: 0, duration: 0.62, ease: "power3.out" },
+      );
+      gsap.fromTo(
+        panel.current,
+        { autoAlpha: 0 },
+        { autoAlpha: 1, duration: 0.4, delay: 0.16, ease: "power2.out" },
+      );
+    }, shell);
+
+    return () => ctx.revert();
+  }, [open]);
+
+  /* stagger the tiles in on every step */
+  useLayoutEffect(() => {
+    if (!open || !panel.current) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const tiles = panel.current.querySelectorAll(".bk-tile, .bk-slot");
+    if (!tiles.length) return;
+
+    const tween = gsap.fromTo(
+      tiles,
+      { autoAlpha: 0, y: 14 },
+      {
+        autoAlpha: 1,
+        y: 0,
+        duration: 0.42,
+        ease: "power2.out",
+        stagger: 0.018,
+        overwrite: true,
+      },
+    );
+
+    return () => {
+      tween.kill();
+      gsap.set(tiles, { clearProps: "all" });
+    };
+  }, [open, step]);
+
+  if (!open || !now) return null;
 
   return (
     <div
       className="bk"
+      ref={shell}
       role="dialog"
       aria-modal="true"
       aria-label="Reserve a court"
