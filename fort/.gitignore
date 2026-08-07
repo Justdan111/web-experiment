@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local media working dirs (not part of the app)
+.media-staging/
+.media-backup/

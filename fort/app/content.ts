@@ -14,7 +14,7 @@ export const STATS = [
 
 export const GALLERY = [
   "/media/g1.webp",
-  "/media/g2.png",
+  "/media/g2.webp",
   "/media/g3.webp",
   "/media/g4.webp",
   "/media/g5.webp",
