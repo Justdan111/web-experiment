@@ -1,0 +1,54 @@
+# Repo-wide ignores for web-experiment.
+# Each project may add its own .gitignore; those stack on top of this one.
+
+# ---- secrets ----------------------------------------------------------
+# Never commit these. API keys live here (e.g. fort/.env.local).
+.env
+.env.*
+*.pem
+*.key
+
+# ---- dependencies -----------------------------------------------------
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/versions
+
+# ---- build output -----------------------------------------------------
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# ---- test / tooling ---------------------------------------------------
+coverage/
+.nyc_output/
+.turbo/
+.vercel/
+.eslintcache
+
+# ---- logs -------------------------------------------------------------
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---- local scratch (not part of any project) --------------------------
+.media-staging/
+.media-backup/
+.superpowers/
+
+# ---- editors & OS -----------------------------------------------------
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
