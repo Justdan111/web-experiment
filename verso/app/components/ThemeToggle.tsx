@@ -1,21 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 type Theme = "light" | "dark";
 
-export default function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme | null>(null);
+/** The <html data-theme> attribute is the single source of truth; watch it. */
+function subscribe(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+  });
+  return () => observer.disconnect();
+}
 
-  // Read what the pre-paint boot script decided; never re-derive it.
-  // `document` doesn't exist during SSR, so this can only happen post-mount,
-  // in an effect — not as a lazy initializer. There is no external-system
-  // subscription to attach to instead, so the setState below is unavoidable.
-  useEffect(() => {
-    const current = document.documentElement.getAttribute("data-theme");
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setTheme(current === "light" ? "light" : "dark");
-  }, []);
+function getSnapshot(): Theme {
+  return document.documentElement.getAttribute("data-theme") === "light"
+    ? "light"
+    : "dark";
+}
+
+/** Matches the hardcoded data-theme="dark" the server renders in layout.tsx. */
+function getServerSnapshot(): Theme {
+  return "dark";
+}
+
+export default function ThemeToggle() {
+  const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const toggle = () => {
     const next: Theme = theme === "light" ? "dark" : "light";
@@ -25,7 +36,6 @@ export default function ThemeToggle() {
     } catch {
       // Private mode or blocked storage: the toggle still works for this session.
     }
-    setTheme(next);
   };
 
   return (
