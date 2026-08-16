@@ -77,11 +77,17 @@ describe("wrapX", () => {
     expect(wrapX(-1100, span)).toBe(900);
   });
 
-  it("is continuous across the seam, so the loop never jumps", () => {
-    const before = wrapX(span - 0.001, span);
-    const after = wrapX(0.001, span);
-    expect(before).toBeCloseTo(span, 2);
-    expect(after).toBeCloseTo(0, 2);
+  it("is exactly periodic, so a recycling card lands where its predecessor was", () => {
+    // The real no-jump guarantee: shifting by a whole span is a no-op.
+    for (const x of [0, 1, 250.5, 999.999, -37, -1000.5]) {
+      expect(wrapX(x + span, span)).toBeCloseTo(wrapX(x, span), 10);
+    }
+  });
+
+  it("lands just inside the seam rather than on it", () => {
+    // wrapX never returns span itself — the top of the range is open.
+    expect(wrapX(span - 0.001, span)).toBeCloseTo(span - 0.001, 10);
+    expect(wrapX(0.001, span)).toBeCloseTo(0.001, 10);
   });
 
   it("always returns a value inside [0, span)", () => {
