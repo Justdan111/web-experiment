@@ -89,3 +89,13 @@ a {
     --gutter: 16px;
   }
 }
+
+/* SplitText word wrappers — keeps words intact while chars animate. */
+.vs-word {
+  white-space: nowrap;
+}
+
+.vs-char {
+  display: inline-block;
+  will-change: transform, opacity;
+}
