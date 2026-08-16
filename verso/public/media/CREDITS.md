@@ -21,5 +21,5 @@ anyway, because it costs nothing and it is the right thing to do.
 | `work/low-tide.jpg` | https://unsplash.com/photos/LRVVqOFNbfI | Felix Hanspach | Unsplash |
 | `news/walk-lisbon.jpg` | https://unsplash.com/photos/QDQ5LXwJ0Rs | Dmitrii E. (@dmitriielj) | Unsplash |
 | `news/walk-kyoto.jpg` | https://unsplash.com/photos/9q-J6VRRquY | Harrison Lin | Unsplash |
-| `news/halide-partnership.jpg` | https://unsplash.com/photos/dcZKujyVRXg | Sergio Franklin | Unsplash |
+| `news/halide-partnership.jpg` | https://unsplash.com/photos/KFRS0B2q05I | Gallen-Kallelan Museon (@gallenkallelan) | Unsplash |
 | `news/field-residency.jpg` | https://unsplash.com/photos/rN6zOBGSZjM | Adrien Olichon | Unsplash |
