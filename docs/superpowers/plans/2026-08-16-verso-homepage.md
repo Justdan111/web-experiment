@@ -134,11 +134,17 @@ export const spaceGrotesk = Space_Grotesk({
   display: "swap",
 });
 
-/** Reserved for micro monospace labels — UTC offsets, dates. */
+/**
+ * Reserved for micro monospace labels — UTC offsets, dates.
+ *
+ * Named --font-space-mono, not --font-mono: Tailwind's theme already owns
+ * --font-mono, and pointing that token at a variable of the same name is a
+ * circular reference that silently resolves to nothing.
+ */
 export const spaceMono = Space_Mono({
   subsets: ["latin"],
   weight: ["400", "700"],
-  variable: "--font-mono",
+  variable: "--font-space-mono",
   display: "swap",
 });
 ```
@@ -157,7 +163,7 @@ Replace `app/globals.css` entirely:
 
 @theme inline {
   --font-sans: var(--font-grotesk);
-  --font-mono: var(--font-mono);
+  --font-mono: var(--font-space-mono);
 }
 
 :root {
@@ -1489,7 +1495,7 @@ export default function Nav() {
   return (
     <header className="fixed inset-x-0 top-0 z-50">
       <nav
-        className="mx-auto flex h-14 max-w-[var(--content)] items-center justify-between px-[var(--gutter)]"
+        className="mx-auto flex h-14 max-w-(--content) items-center justify-between px-(--gutter)"
         style={{ letterSpacing: "var(--track-16)" }}
       >
         {/* The mark. A verso is the reverse side of a leaf, hence the flip. */}
@@ -1721,14 +1727,14 @@ export default function Hero() {
       {/* Full-bleed loop. muted + playsInline are what make iOS autoplay at all. */}
       <HeroVideo />
 
-      <div className="mx-auto max-w-[var(--content)] px-[var(--gutter)] py-16 md:py-24">
+      <div className="mx-auto max-w-(--content) px-(--gutter) py-16 md:py-24">
         <SplitHeadline
           text={HERO.statement}
-          className="max-w-[24ch] text-[32px] leading-[1.16] md:text-[40px] lg:max-w-[30ch] lg:text-[48px] lg:leading-[56px]"
+          className="max-w-[24ch] text-[32px] leading-[1.16] md:text-[40px] lg:max-w-[30ch] lg:text-[48px] lg:leading-14"
           style={{ letterSpacing: "var(--track-48)" }}
         />
         <p
-          className="mt-10 text-[32px] md:text-[40px] lg:text-[48px] lg:leading-[56px]"
+          className="mt-10 text-[32px] md:text-[40px] lg:text-[48px] lg:leading-14"
           style={{ color: "var(--muted)", letterSpacing: "var(--track-48)" }}
         >
           {HERO.link}
@@ -1987,7 +1993,7 @@ export default function HighlightRail() {
       </div>
 
       <div
-        className="mx-auto flex w-full max-w-[var(--content)] items-center justify-between px-[var(--gutter)] text-[16px]"
+        className="mx-auto flex w-full max-w-(--content) items-center justify-between px-(--gutter) text-[16px]"
         style={{ letterSpacing: "var(--track-16)" }}
       >
         <span>Highlight</span>
@@ -2086,7 +2092,7 @@ import type { Work } from "../content/types";
 export default function WorkCard({ work }: { work: Work }) {
   return (
     <article className="group">
-      <div className="h-[var(--card-h)] overflow-hidden" style={{ background: "var(--hairline)" }}>
+      <div className="h-(--card-h) overflow-hidden" style={{ background: "var(--hairline)" }}>
         <Image
           src={work.image}
           alt={`${work.title} — ${work.subtitle}`}
@@ -2145,13 +2151,13 @@ type Props = {
 
 export default function WorkSection({ label, accent, statement, works, weights }: Props) {
   return (
-    <section className="mx-auto max-w-[var(--content)] px-[var(--gutter)] py-24 md:py-32">
+    <section className="mx-auto max-w-(--content) px-(--gutter) py-24 md:py-32">
       <Reveal>
         <p className="text-[12px]" style={{ color: `var(${accent})`, letterSpacing: "var(--track-12)" }}>
           {label}
         </p>
         <p
-          className="mt-6 max-w-[46ch] text-[24px] leading-[1.35] md:text-[32px] md:leading-[40px]"
+          className="mt-6 max-w-[46ch] text-[24px] leading-[1.35] md:text-[32px] md:leading-10"
           style={{ letterSpacing: "var(--track-32)" }}
         >
           {statement}
@@ -2250,7 +2256,7 @@ import type { NewsItem } from "../content/types";
 export default function NewsCard({ item }: { item: NewsItem }) {
   return (
     <article className="group">
-      <div className="aspect-[7/5] overflow-hidden" style={{ background: "var(--hairline)" }}>
+      <div className="aspect-7/5 overflow-hidden" style={{ background: "var(--hairline)" }}>
         <Image
           src={item.image}
           alt={item.headline}
@@ -2263,7 +2269,7 @@ export default function NewsCard({ item }: { item: NewsItem }) {
 
       <div className="mt-4 flex items-baseline justify-between gap-4 text-[12px]" style={{ letterSpacing: "var(--track-12)" }}>
         <span style={{ color: `var(${item.accent})` }}>{item.category}</span>
-        <span className="font-[family-name:var(--font-mono)]" style={{ color: "var(--muted)" }}>
+        <span className="font-mono" style={{ color: "var(--muted)" }}>
           {item.date}
         </span>
       </div>
@@ -2288,7 +2294,7 @@ import Reveal from "./Reveal";
 
 export default function NewsSection() {
   return (
-    <section className="mx-auto max-w-[var(--content)] px-[var(--gutter)] py-24 md:py-32">
+    <section className="mx-auto max-w-(--content) px-(--gutter) py-24 md:py-32">
       <div className="flex items-center justify-between text-[16px]" style={{ letterSpacing: "var(--track-16)" }}>
         <span style={{ color: `var(${INDEX_SECTION.accent})` }}>{INDEX_SECTION.label}</span>
         <span style={{ color: "var(--muted)" }}>View All</span>
@@ -2373,14 +2379,14 @@ export default function Clock({ zone }: { zone: ClockZone }) {
     <div className="min-w-[7ch]">
       {/* Empty until mounted: server time is not the visitor's time. */}
       <div
-        className="text-[32px] tabular-nums md:text-[40px] md:leading-[40px]"
+        className="text-[32px] tabular-nums md:text-[40px] md:leading-10"
         style={{ letterSpacing: "var(--track-40)" }}
         suppressHydrationWarning
       >
         {state?.time ?? " "}
       </div>
       <div
-        className="mt-4 font-[family-name:var(--font-mono)] text-[12px]"
+        className="mt-4 font-mono text-[12px]"
         style={{ color: "var(--muted)", letterSpacing: "var(--track-12)" }}
         suppressHydrationWarning
       >
@@ -2408,18 +2414,18 @@ import { CLOCKS, FOOTER_COLUMNS, LEGAL, SOCIALS } from "../content/site";
 
 export default function Footer() {
   return (
-    <footer className="mx-auto max-w-[var(--content)] px-[var(--gutter)] pb-16 pt-24">
+    <footer className="mx-auto max-w-(--content) px-(--gutter) pb-16 pt-24">
       <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
         {FOOTER_COLUMNS.map((column, i) => (
           <ul
             key={i}
-            className="text-[24px] uppercase md:text-[28px] lg:text-[32px] lg:leading-[40px]"
+            className="text-[24px] uppercase md:text-[28px] lg:text-[32px] lg:leading-10"
             style={{ letterSpacing: "var(--track-32)" }}
           >
             {column.map((item, j) => (
               <li
                 key={item.href}
-                className="cursor-default transition-colors hover:text-[color:var(--text)]"
+                className="cursor-default transition-colors hover:text-(--text)"
                 // The first item of the first column is the current page.
                 style={{ color: i === 0 && j === 0 ? "var(--text)" : "var(--muted)" }}
               >
@@ -2462,7 +2468,7 @@ export default function Footer() {
         <ul className="flex gap-5 text-[12px]" style={{ color: "var(--muted)", letterSpacing: "var(--track-12)" }}>
           {SOCIALS.map((s) => (
             <li key={s.label}>
-              <a href={s.href} className="transition-colors hover:text-[color:var(--text)]">
+              <a href={s.href} className="transition-colors hover:text-(--text)">
                 {s.label}
               </a>
             </li>
