@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+/* ============================================================
+   VERSO — Kyoto
+   Tokens measured from besign.co/en/; see the design spec §2.
+   ============================================================ */
+
+@theme inline {
+  --font-sans: var(--font-grotesk);
+  --font-mono: var(--font-space-mono);
+}
+
+:root {
+  /* palette — light is the fallback, dark is applied below */
+  --ground: #fafafa;
+  --text: #000000;
+  --muted: #8a8a8a;
+  --hairline: rgba(0, 0, 0, 0.1);
+  --mark: #ff5b2e;
+  --accent-field: #2e7f97;
+  --accent-practice: #5b47a8;
+  --accent-index: #8a7410;
+
+  /* layout */
+  --gutter: 32px;
+  --content: 1376px;
+  --gap: 8px;
+  --card-h: 400px;
+
+  /* optical tracking scale — tightens as size grows */
+  --track-12: -0.02em;
+  --track-16: -0.03em;
+  --track-32: -0.03em;
+  --track-40: -0.04em;
+  --track-48: -0.05em;
+}
+
+[data-theme="dark"] {
+  --ground: #0a0a0a;
+  --text: #ffffff;
+  --muted: #bfbfbf;
+  --hairline: rgba(255, 255, 255, 0.1);
+  --accent-field: #9fd8e8;
+  --accent-practice: #c9b8ff;
+  --accent-index: #e8d14a;
+}
+
+html {
+  background: var(--ground);
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--text);
+  font-family: var(--font-grotesk), system-ui, sans-serif;
+  font-weight: 500;
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.shell {
+  max-width: var(--content);
+  margin: 0 auto;
+  padding-inline: var(--gutter);
+}
+
+@media (max-width: 1199px) {
+  :root {
+    --gutter: 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --gutter: 16px;
+  }
+}
