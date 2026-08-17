@@ -99,3 +99,55 @@ a {
   display: inline-block;
   will-change: transform, opacity;
 }
+
+/* ---- Highlight rail -------------------------------------------------
+   The stage owns the perspective; the rail owns the rotation. Cards sit
+   flat at z=0 and let the projection supply their depth.
+
+   perspective only reaches an element's own children, so .rail-stage has
+   to be the direct parent of .rail — anything in between flattens it. --- */
+
+.rail-stage {
+  perspective: 1400px;
+  perspective-origin: 50% 50%;
+  /* Fog. The strip is finite, so past roughly 2200px of viewport its far
+     end lands on screen and cards would be seen being reborn. Fading the
+     far end into the ground hides the recycle at any width, and stands in
+     for the atmospheric falloff the WebGL original gets from lighting. */
+  -webkit-mask-image: linear-gradient(80deg, #000 0%, #000 58%, transparent 84%);
+  mask-image: linear-gradient(80deg, #000 0%, #000 58%, transparent 84%);
+}
+
+.rail {
+  transform-style: preserve-3d;
+  /* Positive rotateY sends increasing card x AWAY from the camera; the
+     negative sign would pull the far end of the strip through the
+     perspective plane (z > 1400px) and blow those cards up to infinity.
+     The push-back then sets how much of the strip the band holds: at z=0
+     the near card alone fills the viewport, at -600 seven or so stack
+     into depth. */
+  transform: translateZ(-600px) rotateY(28deg) rotateZ(-8deg);
+  will-change: transform;
+}
+
+/* Narrow viewports: a 200px card is half the screen, so no amount of
+   push-back fits many of them. Flatten the Y rotation so the images stay
+   readable and lean on a steeper Z tilt to carry the diagonal instead. */
+@media (max-width: 767px) {
+  .rail-stage {
+    perspective: 1100px;
+  }
+
+  .rail {
+    transform: translateZ(-120px) rotateY(18deg) rotateZ(-14deg);
+  }
+}
+
+.rail-card {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--hairline);
+}
