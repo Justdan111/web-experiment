@@ -9,11 +9,10 @@ import {
   TABLET_RAIL,
   railLayout,
   railSpan,
-  wrapX,
   type RailConfig,
 } from "../lib/rail";
 import { WORKS } from "../content/works";
-import { gsap, ScrollTrigger, prefersReducedMotion, registerGsap } from "../lib/gsap";
+import { gsap, prefersReducedMotion, registerGsap } from "../lib/gsap";
 import Ticker from "./Ticker";
 
 function configFor(width: number): RailConfig {
@@ -29,11 +28,11 @@ const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffec
 
 export default function HighlightRail() {
   const stage = useRef<HTMLElement>(null);
-  const rail = useRef<HTMLDivElement>(null);
+  const track = useRef<HTMLDivElement>(null);
   const [config, setConfig] = useState<RailConfig>(DESKTOP_RAIL);
 
   // Resolve the config in its own effect, never inside the useGSAP that
-  // builds the loop: swapping the card count re-renders, and a tween that
+  // drives the track: swapping the card count re-renders, and a tween that
   // has already captured the old elements would keep driving DOM nodes
   // React has thrown away. The configs are module constants, so identity
   // comparison is enough to keep resize from re-rendering on every pixel.
@@ -52,17 +51,16 @@ export default function HighlightRail() {
   useGSAP(
     () => {
       registerGsap();
-      if (!rail.current) return;
+      if (!track.current) return;
 
-      const cards = gsap.utils.toArray<HTMLElement>(".rail-card", rail.current);
+      const cards = gsap.utils.toArray<HTMLElement>(".rail-card", track.current);
       if (!cards.length) return;
 
       // Position first, unconditionally. GSAP owns the whole transform —
-      // an inline one would be overwritten the moment the loop touches x,
+      // an inline one would be overwritten the moment a tween touches x,
       // taking y and scale (i.e. all the depth) with it.
       cards.forEach((card, i) => {
         gsap.set(card, {
-          xPercent: 0,
           yPercent: -50,
           x: layout[i].x,
           y: layout[i].y,
@@ -70,57 +68,32 @@ export default function HighlightRail() {
         });
       });
 
-      // Reduced motion stops the drift, not the wall: the cards above are
-      // already laid out, so the rail stays a legible static composition.
+      // The rail is parked, not running. Scrolling through the section
+      // slides it; when the page is still, so is the wall. An idle
+      // autoplay would fight the hover, which is the actual interaction.
       if (prefersReducedMotion()) return;
 
-      const span = railSpan(config);
-
-      // One tween per card, each wrapped independently. Wrapping the whole
-      // rail would snap the entire strip at the seam; wrapping each card
-      // means only that card recycles, off-screen, invisibly.
-      //
-      // wrapX folds into [0, span); shifting by two card widths either side
-      // moves the recycle point clear of both edges of the projection — the
-      // near end exits past the left edge, the far end is reborn well past
-      // the right one.
-      const margin = config.cardWidth * 2;
-      const loop = gsap.to(cards, {
-        x: `-=${span}`,
-        duration: 60,
-        ease: "none",
-        repeat: -1,
-        modifiers: {
-          x: (x) => `${wrapX(parseFloat(x) + margin, span) - margin}px`,
+      // Slide by whatever the strip overhangs the viewport by, so the far
+      // end has arrived just as the section leaves and neither end sits
+      // parked on screen. Centred, so mid-section is mid-strip.
+      const overhang = Math.max(railSpan(config) - window.innerWidth, 0);
+      const travel = Math.min(overhang, railSpan(config) * 0.5);
+      gsap.fromTo(
+        track.current,
+        { x: travel / 2 },
+        {
+          x: -travel / 2,
+          ease: "none",
+          scrollTrigger: {
+            trigger: stage.current,
+            start: "top bottom",
+            end: "bottom top",
+            // A little scrub smooths the step between scroll events without
+            // letting the strip drift once scrolling stops.
+            scrub: 0.6,
+          },
         },
-      });
-
-      // Scroll does not scrub the loop, it leans on it: the wall drifts by
-      // itself and surges while you move. The surge target decays on the
-      // ticker rather than in an onUpdate tween, because onUpdate stops
-      // firing the instant scrolling stops — which would strand the wall at
-      // whatever speed it was doing when you let go.
-      let target = 1;
-      const trigger = ScrollTrigger.create({
-        trigger: stage.current,
-        start: "top bottom",
-        end: "bottom top",
-        onUpdate: (self) => {
-          target = 1 + Math.min(Math.abs(self.getVelocity()) / 1200, 5);
-        },
-      });
-
-      const settle = () => {
-        target += (1 - target) * 0.03;
-        loop.timeScale(loop.timeScale() + (target - loop.timeScale()) * 0.08);
-      };
-      gsap.ticker.add(settle);
-
-      return () => {
-        gsap.ticker.remove(settle);
-        trigger.kill();
-        loop.kill();
-      };
+      );
     },
     { scope: stage, dependencies: [config], revertOnUpdate: true },
   );
@@ -142,31 +115,47 @@ export default function HighlightRail() {
       </div>
 
       <div className="rail-stage relative flex-1">
-        {/* Decorative: every work here is already linked from the grids below,
-            and the detail routes do not exist in this phase. */}
-        <div ref={rail} className="rail absolute inset-0" aria-hidden="true">
-          {layout.map((card) => {
-            const work = WORKS[card.index % WORKS.length];
-            return (
-              <div
-                key={card.index}
-                className="rail-card"
-                style={{
-                  width: config.cardWidth,
-                  height: Math.round(config.cardWidth * 1.26),
-                }}
-              >
-                <Image
-                  src={work.image}
-                  alt=""
-                  width={config.cardWidth}
-                  height={Math.round(config.cardWidth * 1.26)}
-                  className="h-full w-full object-cover"
-                  sizes={`${config.cardWidth}px`}
-                />
-              </div>
-            );
-          })}
+        <div className="rail absolute inset-0">
+          {/* Decorative, and aria-hidden deliberately. The reference draws
+              this in a canvas, so it is invisible to assistive tech there
+              too; the readable listing is the grids below and All Works.
+              Hover is mouse-only enrichment over that, not a second path
+              to information — which is why there is nothing to focus. */}
+          <div ref={track} className="rail-track" aria-hidden="true">
+            {layout.map((card) => {
+              const work = WORKS[card.index % WORKS.length];
+              const height = Math.round(config.cardWidth * 1.26);
+              return (
+                <div
+                  key={card.index}
+                  className="rail-card"
+                  style={{ width: config.cardWidth, height }}
+                >
+                  <div className="rail-card-in">
+                    <Image
+                      src={work.image}
+                      alt=""
+                      width={config.cardWidth}
+                      height={height}
+                      className="h-full w-full object-cover"
+                      sizes={`${config.cardWidth}px`}
+                    />
+                    <div className="rail-cap">
+                      <p className="text-[14px]" style={{ letterSpacing: "var(--track-16)" }}>
+                        {work.title}
+                      </p>
+                      <p
+                        className="mt-0.5 text-[12px]"
+                        style={{ color: "rgb(255 255 255 / 0.66)", letterSpacing: "var(--track-12)" }}
+                      >
+                        {work.subtitle}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 

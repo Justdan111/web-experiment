@@ -5,7 +5,6 @@ import {
   TABLET_RAIL,
   railLayout,
   railSpan,
-  wrapX,
 } from "./rail";
 
 describe("rail configs", () => {
@@ -53,48 +52,8 @@ describe("railLayout", () => {
 });
 
 describe("railSpan", () => {
-  it("measures the full loop distance", () => {
+  it("measures the full width of the strip", () => {
     const step = DESKTOP_RAIL.cardWidth + DESKTOP_RAIL.gap;
     expect(railSpan(DESKTOP_RAIL)).toBe(step * DESKTOP_RAIL.count);
-  });
-});
-
-describe("wrapX", () => {
-  const span = 1000;
-
-  it("leaves a value inside the span untouched", () => {
-    expect(wrapX(0, span)).toBe(0);
-    expect(wrapX(400, span)).toBe(400);
-  });
-
-  it("wraps a value past the end back to the start", () => {
-    expect(wrapX(1000, span)).toBe(0);
-    expect(wrapX(1200, span)).toBe(200);
-  });
-
-  it("wraps a negative value up into the span", () => {
-    expect(wrapX(-100, span)).toBe(900);
-    expect(wrapX(-1100, span)).toBe(900);
-  });
-
-  it("is exactly periodic, so a recycling card lands where its predecessor was", () => {
-    // The real no-jump guarantee: shifting by a whole span is a no-op.
-    for (const x of [0, 1, 250.5, 999.999, -37, -1000.5]) {
-      expect(wrapX(x + span, span)).toBeCloseTo(wrapX(x, span), 10);
-    }
-  });
-
-  it("lands just inside the seam rather than on it", () => {
-    // wrapX never returns span itself — the top of the range is open.
-    expect(wrapX(span - 0.001, span)).toBeCloseTo(span - 0.001, 10);
-    expect(wrapX(0.001, span)).toBeCloseTo(0.001, 10);
-  });
-
-  it("always returns a value inside [0, span)", () => {
-    for (const x of [-5000, -1, 0, 1, 999, 1000, 7777]) {
-      const w = wrapX(x, span);
-      expect(w).toBeGreaterThanOrEqual(0);
-      expect(w).toBeLessThan(span);
-    }
   });
 });

@@ -2,6 +2,11 @@ export type RailConfig = {
   /** How many cards ride the rail. */
   count: number;
   cardWidth: number;
+  /**
+   * Distance between card edges. Negative on purpose — the reference's
+   * cards overlap by roughly a third, which is what makes the strip read
+   * as one continuous wall rather than a row of separate tiles.
+   */
   gap: number;
   /** Max vertical wander, px, applied symmetrically. */
   yJitter: number;
@@ -18,24 +23,24 @@ export type RailCard = {
 
 export const DESKTOP_RAIL: RailConfig = {
   count: 12,
-  cardWidth: 340,
-  gap: 24,
+  cardWidth: 280,
+  gap: -100,
   yJitter: 48,
   scaleJitter: 0.08,
 };
 
 export const TABLET_RAIL: RailConfig = {
   count: 10,
-  cardWidth: 280,
-  gap: 20,
+  cardWidth: 240,
+  gap: -86,
   yJitter: 36,
   scaleJitter: 0.06,
 };
 
 export const MOBILE_RAIL: RailConfig = {
   count: 8,
-  cardWidth: 200,
-  gap: 16,
+  cardWidth: 180,
+  gap: -64,
   yJitter: 20,
   scaleJitter: 0.04,
 };
@@ -73,12 +78,12 @@ export function railLayout(config: RailConfig): RailCard[] {
   }));
 }
 
-/** Total loop distance: wrapping by this lands the rail back on itself. */
+/**
+ * Full width of the laid-out strip.
+ *
+ * The rail does not loop — it is parked, and scrolling through the section
+ * slides it. This is how far it can travel before the last card arrives.
+ */
 export function railSpan(config: RailConfig): number {
   return (config.cardWidth + config.gap) * config.count;
-}
-
-/** Fold any x into [0, span). Matches gsap.utils.wrap semantics. */
-export function wrapX(x: number, span: number): number {
-  return ((x % span) + span) % span;
 }
