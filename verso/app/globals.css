@@ -110,9 +110,11 @@ a {
 .rail-stage {
   perspective: 1400px;
   perspective-origin: 50% 50%;
-  /* Fog. The strip is finite, so past roughly 2200px of viewport its far
-     end lands on screen and cards would be seen being reborn. Fading the
-     far end into the ground hides the recycle at any width, and stands in
+  /* Fog. LOAD-BEARING above ~2200px of viewport, not decoration: the strip
+     is finite, so past that width its far end lands on screen and cards
+     would be seen being reborn at the wrap point. No wrap offset avoids
+     this — verified at 2560 — so the fade is what hides the recycle there.
+     Delete it and the seam comes back on large monitors. It also stands in
      for the atmospheric falloff the WebGL original gets from lighting. */
   -webkit-mask-image: linear-gradient(80deg, #000 0%, #000 58%, transparent 84%);
   mask-image: linear-gradient(80deg, #000 0%, #000 58%, transparent 84%);

@@ -123,9 +123,14 @@ export default function HighlightRail() {
   return (
     <section
       ref={stage}
-      className="relative flex h-screen flex-col justify-between overflow-clip py-4"
+      className="relative flex h-screen flex-col justify-between overflow-clip pt-14 pb-4"
     >
-      {/* z-10 on the two text edges: the stage is a positioned stacking
+      {/* pt-14 is the fixed nav's height. The wall still scrolls under the
+          nav, as the source does, but the ticker does not: 12px muted
+          uppercase interleaving with 16px muted nav labels reads as noise
+          rather than as layers.
+
+          z-10 on the two text edges: the stage is a positioned stacking
           context, so without it the near cards paint over the copy. */}
       <div className="relative z-10">
         <Ticker text="Highlight" />
