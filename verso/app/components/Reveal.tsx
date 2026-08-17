@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type CSSProperties, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap, prefersReducedMotion, registerGsap } from "../lib/gsap";
 
@@ -10,11 +10,9 @@ type Props = {
   stagger?: boolean;
   delay?: number;
   className?: string;
-  /** Grid sections pass grid-template-columns through here. */
-  style?: CSSProperties;
 };
 
-export default function Reveal({ children, stagger, delay = 0, className, style }: Props) {
+export default function Reveal({ children, stagger, delay = 0, className }: Props) {
   const root = useRef<HTMLDivElement>(null);
 
   useGSAP(
@@ -45,7 +43,7 @@ export default function Reveal({ children, stagger, delay = 0, className, style 
   );
 
   return (
-    <div ref={root} className={className} style={style}>
+    <div ref={root} className={className}>
       {children}
     </div>
   );
