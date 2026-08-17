@@ -9,6 +9,7 @@ import {
   TABLET_RAIL,
   railLayout,
   railSpan,
+  wrapX,
   type RailConfig,
 } from "../lib/rail";
 import { WORKS } from "../content/works";
@@ -68,32 +69,66 @@ export default function HighlightRail() {
         });
       });
 
-      // The rail is parked, not running. Scrolling through the section
-      // slides it; when the page is still, so is the wall. An idle
-      // autoplay would fight the hover, which is the actual interaction.
       if (prefersReducedMotion()) return;
 
-      // Slide by whatever the strip overhangs the viewport by, so the far
-      // end has arrived just as the section leaves and neither end sits
-      // parked on screen. Centred, so mid-section is mid-strip.
-      const overhang = Math.max(railSpan(config) - window.innerWidth, 0);
-      const travel = Math.min(overhang, railSpan(config) * 0.5);
-      gsap.fromTo(
-        track.current,
-        { x: travel / 2 },
-        {
-          x: -travel / 2,
-          ease: "none",
-          scrollTrigger: {
-            trigger: stage.current,
-            start: "top bottom",
-            end: "bottom top",
-            // A little scrub smooths the step between scroll events without
-            // letting the strip drift once scrolling stops.
-            scrub: 0.6,
-          },
-        },
-      );
+      // The cursor drives the strip; scroll is left entirely alone so the
+      // page scrolls normally through the section. Pointer distance from
+      // the centre sets a speed rather than a position, so the strip keeps
+      // travelling for as long as the cursor sits off-centre, and the
+      // middle is a dead zone you can rest in to hover a card.
+      const span = railSpan(config);
+      const step = config.cardWidth + config.gap;
+      // Recycle two cards clear of either edge so no card is ever seen
+      // being reborn inside the viewport.
+      const margin = step * 2;
+      const DEAD_ZONE = 0.14;
+      const MAX_SPEED = 520; // px/sec at full deflection
+
+      let wanted = 0;
+      let speed = 0;
+      let offset = 0;
+
+      const aim = (clientX: number) => {
+        const box = stage.current?.getBoundingClientRect();
+        if (!box) return;
+        const from = (clientX - box.left) / box.width - 0.5; // -0.5..0.5
+        const pull = Math.abs(from) * 2;
+        if (pull <= DEAD_ZONE) {
+          wanted = 0;
+          return;
+        }
+        const ramp = (pull - DEAD_ZONE) / (1 - DEAD_ZONE);
+        // Cursor right of centre pulls the strip left, so the cards travel
+        // toward the pointer rather than away from it.
+        wanted = -Math.sign(from) * ramp * MAX_SPEED;
+      };
+
+      const onMove = (e: PointerEvent) => aim(e.clientX);
+      const onLeave = () => {
+        wanted = 0;
+      };
+
+      const el = stage.current;
+      el?.addEventListener("pointermove", onMove);
+      el?.addEventListener("pointerleave", onLeave);
+
+      const drive = () => {
+        // Ease toward the wanted speed so entering and leaving the section
+        // spins up and coasts down instead of snapping.
+        speed += (wanted - speed) * 0.07;
+        if (Math.abs(speed) < 0.01) return;
+        offset += speed * gsap.ticker.deltaRatio() * (1 / 60);
+        cards.forEach((card, i) => {
+          gsap.set(card, { x: wrapX(layout[i].x + offset + margin, span) - margin });
+        });
+      };
+      gsap.ticker.add(drive);
+
+      return () => {
+        gsap.ticker.remove(drive);
+        el?.removeEventListener("pointermove", onMove);
+        el?.removeEventListener("pointerleave", onLeave);
+      };
     },
     { scope: stage, dependencies: [config], revertOnUpdate: true },
   );
@@ -124,7 +159,7 @@ export default function HighlightRail() {
           <div ref={track} className="rail-track" aria-hidden="true">
             {layout.map((card) => {
               const work = WORKS[card.index % WORKS.length];
-              const height = Math.round(config.cardWidth * 1.26);
+              const height = Math.round(config.cardWidth * 1.55);
               return (
                 <div
                   key={card.index}

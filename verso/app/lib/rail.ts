@@ -3,9 +3,10 @@ export type RailConfig = {
   count: number;
   cardWidth: number;
   /**
-   * Distance between card edges. Negative on purpose — the reference's
-   * cards overlap by roughly a third, which is what makes the strip read
-   * as one continuous wall rather than a row of separate tiles.
+   * Distance between card edges, in rail space — before the projection.
+   * Perspective compresses the strip as it recedes, so a small positive
+   * gap here lands as the reference's roughly one-sixth overlap on screen.
+   * Overlapping in rail space collapses them into one accordion.
    */
   gap: number;
   /** Max vertical wander, px, applied symmetrically. */
@@ -23,24 +24,24 @@ export type RailCard = {
 
 export const DESKTOP_RAIL: RailConfig = {
   count: 12,
-  cardWidth: 280,
-  gap: -100,
+  cardWidth: 232,
+  gap: 10,
   yJitter: 48,
   scaleJitter: 0.08,
 };
 
 export const TABLET_RAIL: RailConfig = {
   count: 10,
-  cardWidth: 240,
-  gap: -86,
+  cardWidth: 205,
+  gap: 9,
   yJitter: 36,
   scaleJitter: 0.06,
 };
 
 export const MOBILE_RAIL: RailConfig = {
   count: 8,
-  cardWidth: 180,
-  gap: -64,
+  cardWidth: 165,
+  gap: 7,
   yJitter: 20,
   scaleJitter: 0.04,
 };
@@ -78,12 +79,19 @@ export function railLayout(config: RailConfig): RailCard[] {
   }));
 }
 
-/**
- * Full width of the laid-out strip.
- *
- * The rail does not loop — it is parked, and scrolling through the section
- * slides it. This is how far it can travel before the last card arrives.
- */
+/** Total loop distance: shifting by this lands the strip back on itself. */
 export function railSpan(config: RailConfig): number {
   return (config.cardWidth + config.gap) * config.count;
+}
+
+/**
+ * Fold any x into [0, span).
+ *
+ * The strip loops forever under the cursor, so each card's x is folded
+ * back into a single period. Exact periodicity is the whole point — see
+ * the test — because a card that lands even a fraction off where its
+ * predecessor was is a visible jump once a cycle.
+ */
+export function wrapX(x: number, span: number): number {
+  return ((x % span) + span) % span;
 }
