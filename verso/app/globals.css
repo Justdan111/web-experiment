@@ -153,3 +153,26 @@ a {
   border-radius: 2px;
   background: var(--hairline);
 }
+
+/* ---- Work sections ----------------------------------------------------
+   Desktop column weighting arrives as an inline style (per-section, via
+   Reveal's style prop), which beats any normal stylesheet rule at every
+   width. The !important below is what lets these breakpoints actually
+   collapse the grid instead of being silently overridden. --- */
+
+.work-grid {
+  display: grid;
+  gap: var(--gap);
+}
+
+@media (max-width: 767px) {
+  .work-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .work-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
