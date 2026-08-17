@@ -14,15 +14,12 @@ export default function Footer() {
             {column.map((item, j) => (
               <li
                 key={item.href}
-                // The trailing "!" forces this above two things that would
-                // otherwise outrank a plain hover utility: the inline color
-                // below (inline styles beat un-important stylesheet rules)
-                // and the unlayered `a { color: inherit }` reset in
-                // globals.css (unlayered rules beat Tailwind's layered
-                // utilities regardless of specificity).
-                className="cursor-default transition-colors hover:text-(--text)!"
                 // The first item of the first column is the current page.
-                style={{ color: i === 0 && j === 0 ? "var(--text)" : "var(--muted)" }}
+                className={
+                  i === 0 && j === 0
+                    ? "cursor-default text-(--text)"
+                    : "cursor-default text-(--muted) transition-colors hover:text-(--text)"
+                }
               >
                 {item.label}
               </li>
@@ -63,10 +60,7 @@ export default function Footer() {
         <ul className="flex gap-5 text-[12px]" style={{ color: "var(--muted)", letterSpacing: "var(--track-12)" }}>
           {SOCIALS.map((s) => (
             <li key={s.label}>
-              {/* "!" forces the hover color above globals.css's unlayered
-                  `a { color: inherit }` reset, which otherwise always wins
-                  over a layered Tailwind utility regardless of specificity. */}
-              <a href={s.href} className="transition-colors hover:text-(--text)!">
+              <a href={s.href} className="transition-colors hover:text-(--text)">
                 {s.label}
               </a>
             </li>
