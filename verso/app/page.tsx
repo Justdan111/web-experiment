@@ -3,6 +3,7 @@ import Hero from "./components/Hero";
 import HighlightRail from "./components/HighlightRail";
 import WorkSection from "./components/WorkSection";
 import NewsSection from "./components/NewsSection";
+import Footer from "./components/Footer";
 import { FIELD, PRACTICE } from "./content/site";
 import { FIELD_WORKS, PRACTICE_WORKS } from "./content/works";
 
@@ -27,6 +28,7 @@ export default function Home() {
         />
         <NewsSection />
       </main>
+      <Footer />
     </>
   );
 }
