@@ -13,8 +13,9 @@ export default function HeroVideo() {
     if (video.current?.error) setFailed(true);
   }, []);
 
-  // A decoding failure or a blocked codec leaves poster="" showing nothing,
-  // so fall all the way back to a real image.
+  // The poster does keep showing if the video fails, but only incidentally.
+  // Swapping to a real image makes the fallback a guarantee rather than a
+  // side effect of how browsers happen to treat a failed <video>.
   if (failed) {
     return (
       <Image

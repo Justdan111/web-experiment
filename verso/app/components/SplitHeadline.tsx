@@ -28,15 +28,19 @@ export default function SplitHeadline({ text, className, style }: Props) {
           type: "words,chars",
           wordsClass: "vs-word",
           charsClass: "vs-char",
-        });
-
-        gsap.from(split.chars, {
-          autoAlpha: 0,
-          yPercent: 40,
-          duration: 0.6,
-          ease: "power3.out",
-          stagger: 0.012,
-          scrollTrigger: { trigger: el.current, start: "top 90%", once: true },
+          // Returning the tween from onSplit hands ownership to SplitText, so
+          // revert() kills it and its ScrollTrigger. A tween created alongside
+          // the split instead would outlive an early unmount: it is made after
+          // useGSAP's synchronous setup returns, so GSAP's context never sees it.
+          onSplit: (self) =>
+            gsap.from(self.chars, {
+              autoAlpha: 0,
+              yPercent: 40,
+              duration: 0.6,
+              ease: "power3.out",
+              stagger: 0.012,
+              scrollTrigger: { trigger: el.current, start: "top 90%", once: true },
+            }),
         });
       };
 
