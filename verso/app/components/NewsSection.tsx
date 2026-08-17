@@ -7,7 +7,12 @@ export default function NewsSection() {
   return (
     <section className="mx-auto max-w-(--content) px-(--gutter) py-24 md:py-32">
       <div className="flex items-center justify-between text-[16px]" style={{ letterSpacing: "var(--track-16)" }}>
-        <span style={{ color: `var(${INDEX_SECTION.accent})` }}>{INDEX_SECTION.label}</span>
+        <h2
+          className="m-0 text-[16px] font-medium"
+          style={{ color: `var(${INDEX_SECTION.accent})`, letterSpacing: "var(--track-16)" }}
+        >
+          {INDEX_SECTION.label}
+        </h2>
         <span style={{ color: "var(--muted)" }}>View All</span>
       </div>
 

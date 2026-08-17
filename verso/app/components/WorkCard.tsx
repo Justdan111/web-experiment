@@ -11,7 +11,11 @@ export default function WorkCard({ work }: { work: Work }) {
           width={work.wide ? 1400 : 700}
           height={880}
           className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-          sizes={work.wide ? "(max-width: 767px) 100vw, 684px" : "(max-width: 767px) 100vw, 338px"}
+          sizes={
+            work.wide
+              ? "(max-width: 767px) 100vw, (max-width: 1199px) 100vw, 684px"
+              : "(max-width: 767px) 100vw, (max-width: 1199px) 50vw, 338px"
+          }
         />
       </div>
 

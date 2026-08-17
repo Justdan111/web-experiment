@@ -14,9 +14,12 @@ export default function WorkSection({ label, accent, statement, works }: Props) 
   return (
     <section className="mx-auto max-w-(--content) px-(--gutter) py-24 md:py-32">
       <Reveal>
-        <p className="text-[12px]" style={{ color: `var(${accent})`, letterSpacing: "var(--track-12)" }}>
+        <h2
+          className="m-0 text-[12px] font-medium"
+          style={{ color: `var(${accent})`, letterSpacing: "var(--track-12)" }}
+        >
           {label}
-        </p>
+        </h2>
         <p
           className="mt-6 max-w-[46ch] text-[24px] leading-[1.35] md:text-[32px] md:leading-10"
           style={{ letterSpacing: "var(--track-32)" }}
