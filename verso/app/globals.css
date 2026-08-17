@@ -79,12 +79,6 @@ html {
   }
 }
 
-.shell {
-  max-width: var(--content);
-  margin: 0 auto;
-  padding-inline: var(--gutter);
-}
-
 @media (max-width: 1199px) {
   :root {
     --gutter: 24px;

@@ -50,6 +50,7 @@ export default function Footer() {
             style={{ letterSpacing: "var(--track-16)" }}
           />
           <span
+            aria-disabled="true"
             className="cursor-default rounded-full px-6 py-3 text-[16px]"
             style={{ background: "var(--hairline)", letterSpacing: "var(--track-16)" }}
           >

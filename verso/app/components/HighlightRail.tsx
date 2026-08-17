@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import {
   DESKTOP_RAIL,
@@ -22,6 +22,11 @@ function configFor(width: number): RailConfig {
   return DESKTOP_RAIL;
 }
 
+// useLayoutEffect warns when it runs on the server, since it never fires
+// there. Falling back to useEffect for that pass is safe: SSR has no
+// browser paint to race, so nothing is lost by not being "layout" yet.
+const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
 export default function HighlightRail() {
   const stage = useRef<HTMLElement>(null);
   const rail = useRef<HTMLDivElement>(null);
@@ -32,7 +37,7 @@ export default function HighlightRail() {
   // has already captured the old elements would keep driving DOM nodes
   // React has thrown away. The configs are module constants, so identity
   // comparison is enough to keep resize from re-rendering on every pixel.
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const sync = () => {
       const next = configFor(window.innerWidth);
       setConfig((prev) => (prev === next ? prev : next));
