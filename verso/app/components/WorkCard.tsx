@@ -3,7 +3,7 @@ import type { Work } from "../content/types";
 
 export default function WorkCard({ work }: { work: Work }) {
   return (
-    <article className="group">
+    <article className={work.wide ? "group is-wide" : "group"}>
       <div className="h-(--card-h) overflow-hidden" style={{ background: "var(--hairline)" }}>
         <Image
           src={work.image}

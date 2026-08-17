@@ -17,14 +17,12 @@ export default function Home() {
           accent={FIELD.accent}
           statement={FIELD.statement}
           works={FIELD_WORKS}
-          weights="1fr 1fr 2fr"
         />
         <WorkSection
           label={PRACTICE.label}
           accent={PRACTICE.accent}
           statement={PRACTICE.statement}
           works={PRACTICE_WORKS}
-          weights="2fr 1fr 1fr"
         />
       </main>
     </>

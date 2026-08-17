@@ -8,11 +8,9 @@ type Props = {
   accent: string;
   statement: string;
   works: Work[];
-  /** Desktop grid-template-columns, e.g. "1fr 1fr 2fr". */
-  weights: string;
 };
 
-export default function WorkSection({ label, accent, statement, works, weights }: Props) {
+export default function WorkSection({ label, accent, statement, works }: Props) {
   return (
     <section className="mx-auto max-w-(--content) px-(--gutter) py-24 md:py-32">
       <Reveal>
@@ -35,11 +33,7 @@ export default function WorkSection({ label, accent, statement, works, weights }
         <span style={{ color: "var(--muted)" }}>View All</span>
       </div>
 
-      <Reveal
-        stagger
-        className="work-grid mt-6"
-        style={{ gridTemplateColumns: weights }}
-      >
+      <Reveal stagger className="work-grid mt-6">
         {works.map((w) => (
           <WorkCard key={w.slug} work={w} />
         ))}

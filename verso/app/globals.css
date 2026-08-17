@@ -23,7 +23,9 @@
 
   /* layout */
   --gutter: 32px;
-  --content: 1376px;
+  /* Outer container. The 1376px of content measured on the reference sits
+     INSIDE the 32px gutters, so the container itself is a 1440px viewport. */
+  --content: 1440px;
   --gap: 8px;
   --card-h: 400px;
 
@@ -155,24 +157,33 @@ a {
 }
 
 /* ---- Work sections ----------------------------------------------------
-   Desktop column weighting arrives as an inline style (per-section, via
-   Reveal's style prop), which beats any normal stylesheet rule at every
-   width. The !important below is what lets these breakpoints actually
-   collapse the grid instead of being silently overridden. --- */
+   Four equal columns with 8px gutters, matching the reference: a narrow
+   card spans one (338px at a 1440 viewport), a wide card spans two (684px).
+   The section's own order decides which slot each card lands in. --- */
 
 .work-grid {
   display: grid;
   gap: var(--gap);
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.work-grid > .is-wide {
+  grid-column: span 2;
+}
+
+@media (max-width: 1199px) {
+  .work-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 767px) {
   .work-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
-}
 
-@media (min-width: 768px) and (max-width: 1199px) {
-  .work-grid {
-    grid-template-columns: 1fr 1fr !important;
+  /* A two-column span would overflow a single-column grid. */
+  .work-grid > .is-wide {
+    grid-column: span 1;
   }
 }
