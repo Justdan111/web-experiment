@@ -1,0 +1,248 @@
+@import "tailwindcss";
+
+/* ============================================================
+   VERSO — Kyoto
+   Tokens measured from besign.co/en/; see the design spec §2.
+   ============================================================ */
+
+@theme inline {
+  --font-sans: var(--font-grotesk);
+  --font-mono: var(--font-space-mono);
+}
+
+:root {
+  /* palette — light is the fallback, dark is applied below */
+  --ground: #fafafa;
+  --text: #000000;
+  --muted: #8a8a8a;
+  --hairline: rgba(0, 0, 0, 0.1);
+  --mark: #ff5b2e;
+  --accent-field: #2e7f97;
+  --accent-practice: #5b47a8;
+  --accent-index: #8a7410;
+
+  /* layout */
+  --gutter: 32px;
+  /* Outer container. The 1376px of content measured on the reference sits
+     INSIDE the 32px gutters, so the container itself is a 1440px viewport. */
+  --content: 1440px;
+  --gap: 8px;
+  --card-h: 400px;
+
+  /* optical tracking scale — tightens as size grows */
+  --track-12: -0.02em;
+  --track-16: -0.03em;
+  --track-32: -0.03em;
+  --track-40: -0.04em;
+  --track-48: -0.05em;
+}
+
+[data-theme="dark"] {
+  --ground: #0a0a0a;
+  --text: #ffffff;
+  --muted: #bfbfbf;
+  --hairline: rgba(255, 255, 255, 0.1);
+  --accent-field: #9fd8e8;
+  --accent-practice: #c9b8ff;
+  --accent-index: #e8d14a;
+}
+
+html {
+  background: var(--ground);
+  overflow-x: clip;
+}
+
+/* Element resets belong in a layer: unlayered rules outrank every Tailwind
+   utility, so an unlayered `a { color: inherit }` silently defeats any
+   text-* or hover:text-* utility applied to a link. */
+@layer base {
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--text);
+    font-family: var(--font-grotesk), system-ui, sans-serif;
+    font-weight: 500;
+    overflow-x: clip;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  img,
+  video,
+  canvas {
+    display: block;
+    max-width: 100%;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+@media (max-width: 1199px) {
+  :root {
+    --gutter: 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --gutter: 16px;
+  }
+}
+
+/* SplitText word wrappers — keeps words intact while chars animate. */
+.vs-word {
+  white-space: nowrap;
+}
+
+.vs-char {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+/* ---- Highlight rail -------------------------------------------------
+   The stage owns the perspective; the rail owns the rotation. Cards sit
+   flat at z=0 and let the projection supply their depth.
+
+   perspective only reaches an element's own children, so .rail-stage has
+   to be the direct parent of .rail — anything in between flattens it. --- */
+
+.rail-stage {
+  /* Long perspective, shallow rotation: the reference's cards all read at
+     roughly the same size, so the projection has to be weak. */
+  perspective: 3200px;
+  perspective-origin: 50% 50%;
+  /* No fog. The old mask existed to hide cards being reborn at the loop's
+     wrap point; the strip no longer loops, so there is no seam to cover and
+     the cards simply run off the edges as the reference's do. */
+}
+
+.rail {
+  transform-style: preserve-3d;
+  /* Positive rotateY sends increasing card x AWAY from the camera; the
+     negative sign would pull the far end of the strip through the
+     perspective plane and blow those cards up to infinity.
+
+     The angle is deliberately shallow. A steeper one reads as a corridor
+     receding to a vanishing point, where the reference reads as a row of
+     cards standing side by side, all at comparable size — a long
+     perspective and a small rotation keep the falloff gentle. */
+  transform: translateZ(-260px) rotateY(15deg) rotateZ(-7deg);
+  will-change: transform;
+}
+
+/* GSAP owns x on the track (scroll position) and x/y/scale on each card
+   (layout), so neither may carry a CSS transform — it would be overwritten
+   on the first tween. The track only needs to keep the 3D chain alive. */
+.rail-track {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+/* Narrow viewports: a 200px card is half the screen, so no amount of
+   push-back fits many of them. Flatten the Y rotation further so the
+   images stay readable and lean on a steeper Z tilt for the diagonal. */
+@media (max-width: 767px) {
+  .rail-stage {
+    perspective: 2400px;
+  }
+
+  .rail {
+    transform: translateZ(-80px) rotateY(11deg) rotateZ(-13deg);
+  }
+}
+
+.rail-card {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform-style: preserve-3d;
+}
+
+/* The inner element carries the hover state so the outer one stays free
+   for GSAP's layout transform. Pulling the card toward the camera on z
+   rather than scaling it means the perspective does the growing, which is
+   what makes it read as stepping out of the row instead of inflating. */
+.rail-card-in {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--hairline);
+  transform: translateZ(0);
+  transition:
+    transform 620ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 620ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.rail-card:hover .rail-card-in {
+  transform: translateZ(190px);
+}
+
+/* Its neighbours give way. :has() reaches the previous sibling, which no
+   combinator can; the adjacent selector handles the next one. */
+.rail-card:has(+ .rail-card:hover) .rail-card-in {
+  transform: translateX(-34px);
+}
+
+.rail-card:hover + .rail-card .rail-card-in {
+  transform: translateX(34px);
+}
+
+/* Caption, revealed with the card. */
+.rail-cap {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: 14px 16px;
+  background: linear-gradient(transparent, rgb(0 0 0 / 0.72));
+  color: #fff;
+  opacity: 0;
+  transition: opacity 420ms ease;
+}
+
+.rail-card:hover .rail-cap {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail-card-in,
+  .rail-cap {
+    transition: none;
+  }
+}
+
+/* ---- Work sections ----------------------------------------------------
+   Four equal columns with 8px gutters, matching the reference: a narrow
+   card spans one (338px at a 1440 viewport), a wide card spans two (684px).
+   The section's own order decides which slot each card lands in. --- */
+
+.work-grid {
+  display: grid;
+  gap: var(--gap);
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.work-grid > .is-wide {
+  grid-column: span 2;
+}
+
+@media (max-width: 1199px) {
+  .work-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .work-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* A two-column span would overflow a single-column grid. */
+  .work-grid > .is-wide {
+    grid-column: span 1;
+  }
+}
