@@ -3,10 +3,10 @@ export type RailConfig = {
   count: number;
   cardWidth: number;
   /**
-   * Distance between card edges, in rail space — before the projection.
-   * Perspective compresses the strip as it recedes, so a tenth of overlap
-   * here lands as the reference's roughly one-sixth on screen. Overlapping
-   * a full fifth in rail space collapses them into one accordion.
+   * Distance between pane edges, in rail space. Each pane is turned about
+   * its own Y axis, so it projects at cos(ROTATE_Y) of its width — the gap
+   * has to open up accordingly to still land on a fifth of *projected*
+   * overlap, which is what the reference measures.
    */
   gap: number;
 };
@@ -28,20 +28,20 @@ export function cardHeight(config: RailConfig): number {
 
 export const DESKTOP_RAIL: RailConfig = {
   count: 12,
-  cardWidth: 220,
-  gap: -20,
+  cardWidth: 240,
+  gap: -66,
 };
 
 export const TABLET_RAIL: RailConfig = {
   count: 10,
-  cardWidth: 190,
-  gap: -17,
+  cardWidth: 208,
+  gap: -57,
 };
 
 export const MOBILE_RAIL: RailConfig = {
   count: 8,
-  cardWidth: 150,
-  gap: -14,
+  cardWidth: 168,
+  gap: -46,
 };
 
 /**
@@ -59,6 +59,16 @@ export function railLayout(config: RailConfig): RailCard[] {
     x: index * step,
   }));
 }
+
+/**
+ * How far each pane is turned about its own vertical axis, in degrees.
+ *
+ * Per pane rather than on the row: a 650px perspective applied to a
+ * rotated row would drive the far end of the strip to a fraction of the
+ * near end, where turning each pane in place leaves them all the same
+ * distance from the camera and so the same size.
+ */
+export const ROTATE_Y = 30;
 
 /** Total loop distance: shifting by this lands the strip back on itself. */
 export function railSpan(config: RailConfig): number {

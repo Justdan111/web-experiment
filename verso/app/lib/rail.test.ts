@@ -43,9 +43,9 @@ describe("railLayout", () => {
     expect(cards.every((c) => Object.keys(c).sort().join() === "index,x")).toBe(true);
   });
 
-  it("overlaps neighbours by about a tenth in rail space", () => {
+  it("opens the rail-space gap to allow for per-pane foreshortening", () => {
     const step = DESKTOP_RAIL.cardWidth + DESKTOP_RAIL.gap;
-    expect(1 - step / DESKTOP_RAIL.cardWidth).toBeCloseTo(0.09, 2);
+    expect(1 - step / DESKTOP_RAIL.cardWidth).toBeCloseTo(0.275, 3);
   });
 });
 

@@ -15,7 +15,6 @@ import {
 } from "../lib/rail";
 import { WORKS } from "../content/works";
 import { gsap, prefersReducedMotion, registerGsap } from "../lib/gsap";
-import Ticker from "./Ticker";
 
 function configFor(width: number): RailConfig {
   if (width < 768) return MOBILE_RAIL;
@@ -83,8 +82,11 @@ export default function HighlightRail() {
       // sit on. Counter-rotating most of it back leaves the strip diagonal
       // while the cards themselves stand very nearly upright, which is how
       // the reference reads.
+      // rotation counters the row's -13deg so the panes stand upright. The
+      // Y turn lives in CSS on the inner element, against each pane's own
+      // perspective.
       cards.forEach((card) => {
-        gsap.set(card, { yPercent: -50, rotation: 10 });
+        gsap.set(card, { yPercent: -50, rotation: 13 });
       });
       place();
 
@@ -147,7 +149,7 @@ export default function HighlightRail() {
   return (
     <section
       ref={stage}
-      className="relative flex h-screen flex-col justify-between overflow-clip pt-14 pb-4"
+      className="relative flex h-screen flex-col justify-end overflow-clip pb-6"
       style={{ zIndex: 60 }}
     >
       {/* pt-14 is the fixed nav's height. The wall still scrolls under the
@@ -157,10 +159,6 @@ export default function HighlightRail() {
 
           z-10 on the two text edges: the stage is a positioned stacking
           context, so without it the near cards paint over the copy. */}
-      <div className="relative">
-        <Ticker text="Highlight" />
-      </div>
-
       {/* The strip is a full-height overlay rather than a row between the
           two labels, so it reaches up over the fixed nav the way the
           reference's does — the occlusion is what makes it read as a
@@ -177,8 +175,9 @@ export default function HighlightRail() {
             {layout.map((card) => {
               const work = WORKS[card.index % WORKS.length];
               const height = cardHeight(config);
-              // Every third pane frosted, so opaque and translucent alternate.
-              const glass = card.index % 3 === 1;
+              // Two frosted panes, not a default. Applied to every pane the
+              // translucency turns the middle of the strip to grey mush.
+              const glass = card.index === 3 || card.index === 8;
               return (
                 <div
                   key={card.index}
@@ -217,8 +216,11 @@ export default function HighlightRail() {
         className="relative mx-auto flex w-full max-w-(--content) items-center justify-between px-(--gutter) text-[16px]"
         style={{ letterSpacing: "var(--track-16)" }}
       >
-        <span>Highlight</span>
         <span style={{ color: "var(--muted)" }}>View All</span>
+        {/* The section's one label, bottom right. It used to repeat across
+            the top as a ticker, which drew a hard horizontal rule above a
+            diagonal composition and broke the illusion. */}
+        <span style={{ color: "var(--muted)" }}>Highlight</span>
       </div>
     </section>
   );
