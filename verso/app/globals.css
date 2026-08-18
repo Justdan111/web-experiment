@@ -102,61 +102,56 @@ html {
 }
 
 /* ---- Highlight rail -------------------------------------------------
-   The stage owns the perspective; the rail owns the rotation. Cards sit
-   flat at z=0 and let the projection supply their depth.
+   The stage owns the perspective; the row owns the rotation. Cards sit
+   flat and let the projection supply their depth.
 
    perspective only reaches an element's own children, so .rail-stage has
    to be the direct parent of .rail — anything in between flattens it. --- */
 
 .rail-stage {
-  /* Long perspective, shallow rotation: the reference's cards all read at
-     roughly the same size, so the projection has to be weak. */
-  perspective: 3200px;
-  perspective-origin: 50% 50%;
-  /* No fog. The old mask existed to hide cards being reborn at the loop's
-     wrap point; the strip no longer loops, so there is no seam to cover and
-     the cards simply run off the edges as the reference's do. */
+  perspective: 1600px;
+  perspective-origin: 50% 40%;
 }
 
 .rail {
   transform-style: preserve-3d;
-  /* Positive rotateY sends increasing card x AWAY from the camera; the
-     negative sign would pull the far end of the strip through the
-     perspective plane and blow those cards up to infinity.
+  /* rotateZ carries the diagonal: at -13deg a horizontal row rises by
+     about a fifth of a card's width per step, which is the reference's
+     vertical rhythm without any per-card y offset.
 
-     The angle is deliberately shallow. A steeper one reads as a corridor
-     receding to a vanishing point, where the reference reads as a row of
-     cards standing side by side, all at comparable size — a long
-     perspective and a small rotation keep the falloff gentle. */
-  transform: translateZ(-260px) rotateY(15deg) rotateZ(-7deg);
+     Positive rotateY sends the right edge away from the camera — that is
+     why the left edge of each card reads taller. The negative sign would
+     pull the far end of the strip through the perspective plane and blow
+     those cards up to infinity. */
+  transform: rotateZ(-13deg) rotateY(18deg);
   will-change: transform;
 }
 
-/* GSAP owns x on the track (scroll position) and x/y/scale on each card
-   (layout), so neither may carry a CSS transform — it would be overwritten
-   on the first tween. The track only needs to keep the 3D chain alive. */
+/* GSAP owns x on the track (cursor position) and x on each card (layout),
+   so neither may carry a CSS transform — it would be overwritten on the
+   first tween. The track only needs to keep the 3D chain alive. */
 .rail-track {
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
 }
 
-/* Narrow viewports: a 200px card is half the screen, so no amount of
-   push-back fits many of them. Flatten the Y rotation further so the
-   images stay readable and lean on a steeper Z tilt for the diagonal. */
 @media (max-width: 767px) {
   .rail-stage {
-    perspective: 2400px;
+    perspective: 1200px;
   }
 
   .rail {
-    transform: translateZ(-80px) rotateY(11deg) rotateZ(-13deg);
+    transform: rotateZ(-15deg) rotateY(14deg);
   }
 }
 
 .rail-card {
   position: absolute;
-  top: 50%;
+  /* Above centre, so the rising end of the row clears the nav and paints
+     over it. Sitting the row dead-centre leaves it tucked politely under
+     the header, which loses the floating-object read entirely. */
+  top: 36%;
   left: 0;
   transform-style: preserve-3d;
 }
@@ -164,22 +159,34 @@ html {
 /* The inner element carries the hover state so the outer one stays free
    for GSAP's layout transform. Pulling the card toward the camera on z
    rather than scaling it means the perspective does the growing, which is
-   what makes it read as stepping out of the row instead of inflating. */
+   what makes it read as stepping out of the row instead of inflating.
+
+   Square corners, no shadow, no border: these are meant to read as flat
+   panes of glass stacked on edge, not as cards on a surface. */
 .rail-card-in {
   position: relative;
   height: 100%;
   width: 100%;
   overflow: hidden;
-  border-radius: 2px;
+  border-radius: 0;
   background: var(--hairline);
   transform: translateZ(0);
   transition:
     transform 620ms cubic-bezier(0.22, 1, 0.36, 1),
-    filter 620ms cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 620ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Every third pane is frosted. The alternation between opaque and
+   translucent is what gives the strip its stacked-glass depth — without
+   it the row reads as a strip of thumbnails. */
+.rail-card--glass .rail-card-in {
+  opacity: 0.72;
+  backdrop-filter: blur(6px);
 }
 
 .rail-card:hover .rail-card-in {
   transform: translateZ(190px);
+  opacity: 1;
 }
 
 /* Its neighbours give way. :has() reaches the previous sibling, which no
@@ -192,7 +199,7 @@ html {
   transform: translateX(34px);
 }
 
-/* Caption, revealed with the card. */
+/* Caption, revealed with the card. Nothing sits on a card at rest. */
 .rail-cap {
   position: absolute;
   inset-inline: 0;

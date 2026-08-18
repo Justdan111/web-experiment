@@ -3,6 +3,7 @@ import {
   DESKTOP_RAIL,
   MOBILE_RAIL,
   TABLET_RAIL,
+  cardHeight,
   railLayout,
   railSpan,
   wrapX,
@@ -34,21 +35,25 @@ describe("railLayout", () => {
     expect(railLayout(DESKTOP_RAIL)).toEqual(railLayout(DESKTOP_RAIL));
   });
 
-  it("keeps vertical jitter inside its configured bound", () => {
-    for (const c of railLayout(DESKTOP_RAIL)) {
-      expect(Math.abs(c.y)).toBeLessThanOrEqual(DESKTOP_RAIL.yJitter);
-    }
+  it("lays every card on one straight line", () => {
+    // The diagonal is the row's rotateZ, not a per-card vertical step, so
+    // x is the only thing layout decides. A y here would fight the
+    // projection rather than add to it.
+    const cards = railLayout(DESKTOP_RAIL);
+    expect(cards.every((c) => Object.keys(c).sort().join() === "index,x")).toBe(true);
   });
 
-  it("keeps scale jitter inside its configured bound", () => {
-    for (const c of railLayout(DESKTOP_RAIL)) {
-      expect(Math.abs(c.scale - 1)).toBeLessThanOrEqual(DESKTOP_RAIL.scaleJitter);
-    }
+  it("overlaps neighbours by about a tenth in rail space", () => {
+    const step = DESKTOP_RAIL.cardWidth + DESKTOP_RAIL.gap;
+    expect(1 - step / DESKTOP_RAIL.cardWidth).toBeCloseTo(0.09, 2);
   });
+});
 
-  it("does not place every card at the same height", () => {
-    const ys = new Set(railLayout(DESKTOP_RAIL).map((c) => c.y));
-    expect(ys.size).toBeGreaterThan(1);
+describe("cardHeight", () => {
+  it("holds every breakpoint to the same 3:4 portrait", () => {
+    for (const c of [DESKTOP_RAIL, TABLET_RAIL, MOBILE_RAIL]) {
+      expect(cardHeight(c) / c.cardWidth).toBeCloseTo(4 / 3, 2);
+    }
   });
 });
 

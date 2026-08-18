@@ -7,6 +7,7 @@ import {
   DESKTOP_RAIL,
   MOBILE_RAIL,
   TABLET_RAIL,
+  cardHeight,
   railLayout,
   railSpan,
   wrapX,
@@ -60,14 +61,32 @@ export default function HighlightRail() {
       // Position first, unconditionally. GSAP owns the whole transform —
       // an inline one would be overwritten the moment a tween touches x,
       // taking y and scale (i.e. all the depth) with it.
-      cards.forEach((card, i) => {
-        gsap.set(card, {
-          yPercent: -50,
-          x: layout[i].x,
-          y: layout[i].y,
-          scale: layout[i].scale,
+      const span = railSpan(config);
+      const step = config.cardWidth + config.gap;
+      // Recycle two cards clear of either edge so none is ever seen being
+      // reborn inside the viewport.
+      const margin = step * 2;
+
+      // Rest a third of the way along rather than at the strip's left end.
+      // The row climbs to the right, so starting at x=0 frames only its
+      // low end and leaves the rise — the part that crosses the nav — off
+      // screen entirely.
+      let offset = -span * 0.34;
+
+      const place = () => {
+        cards.forEach((card, i) => {
+          gsap.set(card, { x: wrapX(layout[i].x + offset + margin, span) - margin });
         });
+      };
+
+      // The row's -13deg rotateZ leans the cards as well as the line they
+      // sit on. Counter-rotating most of it back leaves the strip diagonal
+      // while the cards themselves stand very nearly upright, which is how
+      // the reference reads.
+      cards.forEach((card) => {
+        gsap.set(card, { yPercent: -50, rotation: 10 });
       });
+      place();
 
       if (prefersReducedMotion()) return;
 
@@ -76,17 +95,11 @@ export default function HighlightRail() {
       // the centre sets a speed rather than a position, so the strip keeps
       // travelling for as long as the cursor sits off-centre, and the
       // middle is a dead zone you can rest in to hover a card.
-      const span = railSpan(config);
-      const step = config.cardWidth + config.gap;
-      // Recycle two cards clear of either edge so no card is ever seen
-      // being reborn inside the viewport.
-      const margin = step * 2;
       const DEAD_ZONE = 0.14;
       const MAX_SPEED = 520; // px/sec at full deflection
 
       let wanted = 0;
       let speed = 0;
-      let offset = 0;
 
       const aim = (clientX: number) => {
         const box = stage.current?.getBoundingClientRect();
@@ -118,9 +131,7 @@ export default function HighlightRail() {
         speed += (wanted - speed) * 0.07;
         if (Math.abs(speed) < 0.01) return;
         offset += speed * gsap.ticker.deltaRatio() * (1 / 60);
-        cards.forEach((card, i) => {
-          gsap.set(card, { x: wrapX(layout[i].x + offset + margin, span) - margin });
-        });
+        place();
       };
       gsap.ticker.add(drive);
 
@@ -137,6 +148,7 @@ export default function HighlightRail() {
     <section
       ref={stage}
       className="relative flex h-screen flex-col justify-between overflow-clip pt-14 pb-4"
+      style={{ zIndex: 60 }}
     >
       {/* pt-14 is the fixed nav's height. The wall still scrolls under the
           nav, as the source does, but the ticker does not: 12px muted
@@ -145,11 +157,16 @@ export default function HighlightRail() {
 
           z-10 on the two text edges: the stage is a positioned stacking
           context, so without it the near cards paint over the copy. */}
-      <div className="relative z-10">
+      <div className="relative">
         <Ticker text="Highlight" />
       </div>
 
-      <div className="rail-stage relative flex-1">
+      {/* The strip is a full-height overlay rather than a row between the
+          two labels, so it reaches up over the fixed nav the way the
+          reference's does — the occlusion is what makes it read as a
+          physical object floating above the page rather than a banner
+          slotted into it. */}
+      <div className="rail-stage absolute inset-0">
         <div className="rail absolute inset-0">
           {/* Decorative, and aria-hidden deliberately. The reference draws
               this in a canvas, so it is invisible to assistive tech there
@@ -159,11 +176,13 @@ export default function HighlightRail() {
           <div ref={track} className="rail-track" aria-hidden="true">
             {layout.map((card) => {
               const work = WORKS[card.index % WORKS.length];
-              const height = Math.round(config.cardWidth * 1.55);
+              const height = cardHeight(config);
+              // Every third pane frosted, so opaque and translucent alternate.
+              const glass = card.index % 3 === 1;
               return (
                 <div
                   key={card.index}
-                  className="rail-card"
+                  className={glass ? "rail-card rail-card--glass" : "rail-card"}
                   style={{ width: config.cardWidth, height }}
                 >
                   <div className="rail-card-in">
@@ -195,7 +214,7 @@ export default function HighlightRail() {
       </div>
 
       <div
-        className="relative z-10 mx-auto flex w-full max-w-(--content) items-center justify-between px-(--gutter) text-[16px]"
+        className="relative mx-auto flex w-full max-w-(--content) items-center justify-between px-(--gutter) text-[16px]"
         style={{ letterSpacing: "var(--track-16)" }}
       >
         <span>Highlight</span>
