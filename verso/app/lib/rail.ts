@@ -1,13 +1,8 @@
 export type RailConfig = {
-  /** How many cards ride the rail. */
+  /** How many panes ride the rail. */
   count: number;
   cardWidth: number;
-  /**
-   * Distance between pane edges, in rail space. Each pane is turned about
-   * its own Y axis, so it projects at cos(ROTATE_Y) of its width — the gap
-   * has to open up accordingly to still land on a fifth of *projected*
-   * overlap, which is what the reference measures.
-   */
+  /** Negative: panes overlap by OVERLAP of their width. */
   gap: number;
 };
 
@@ -16,41 +11,52 @@ export type RailCard = {
   x: number;
 };
 
+/** Nine panes; seven fill the viewport and the other two are a scroll away. */
+export const COUNT = 9;
+
 /**
- * Cards are 3:4 portrait, as the reference's are. Derived rather than
- * configured so the aspect cannot drift on one breakpoint and not another.
+ * Pane width as a fraction of the viewport.
+ *
+ * Seven panes overlapping by a fifth occupy 1 + 6 x 0.8 = 5.8 pane widths,
+ * so 1/5.8 = 0.172 puts the seventh pane's right edge on the viewport edge.
  */
+export const CARD_VW = 0.172;
+
+/** Fraction of its width each pane hides under its neighbour. */
+export const OVERLAP = 0.2;
+
+/**
+ * How far each pane is turned about its own vertical axis, in degrees.
+ *
+ * Per pane rather than on the row: one shared perspective projects from a
+ * single point, so panes far from it shear and shrink. Turning each in
+ * place against its own perspective projects them all head-on — same
+ * taper, same size — which is nearer to what the WebGL original does.
+ */
+export const ROTATE_Y = 15;
+
+/** Panes are 3:4 portrait, as the reference's are. */
 export const CARD_ASPECT = 4 / 3;
+
+/** The width the server renders at, before the client knows the viewport. */
+export const SSR_WIDTH = 1440;
+
+export function railConfig(viewportWidth: number): RailConfig {
+  const cardWidth = Math.round(viewportWidth * CARD_VW);
+  return { count: COUNT, cardWidth, gap: -Math.round(cardWidth * OVERLAP) };
+}
 
 export function cardHeight(config: RailConfig): number {
   return Math.round(config.cardWidth * CARD_ASPECT);
 }
 
-export const DESKTOP_RAIL: RailConfig = {
-  count: 12,
-  cardWidth: 240,
-  gap: -66,
-};
-
-export const TABLET_RAIL: RailConfig = {
-  count: 10,
-  cardWidth: 208,
-  gap: -57,
-};
-
-export const MOBILE_RAIL: RailConfig = {
-  count: 8,
-  cardWidth: 168,
-  gap: -46,
-};
-
 /**
- * Card positions along the rail.
+ * Pane positions along the rail.
  *
- * x only, and deliberately so. The cards sit on one straight line at a
+ * x only, and deliberately so. The panes sit on one straight line at a
  * single height: the diagonal is the row's own rotateZ rather than a
- * per-card vertical step, and the size falloff is the perspective rather
- * than a per-card scale. Jittering either would only fight the projection.
+ * per-pane vertical step, and any size difference is the projection rather
+ * than a per-pane scale. Jittering either would only fight them.
  */
 export function railLayout(config: RailConfig): RailCard[] {
   const step = config.cardWidth + config.gap;
@@ -60,16 +66,6 @@ export function railLayout(config: RailConfig): RailCard[] {
   }));
 }
 
-/**
- * How far each pane is turned about its own vertical axis, in degrees.
- *
- * Per pane rather than on the row: a 650px perspective applied to a
- * rotated row would drive the far end of the strip to a fraction of the
- * near end, where turning each pane in place leaves them all the same
- * distance from the camera and so the same size.
- */
-export const ROTATE_Y = 30;
-
 /** Total loop distance: shifting by this lands the strip back on itself. */
 export function railSpan(config: RailConfig): number {
   return (config.cardWidth + config.gap) * config.count;
@@ -78,9 +74,9 @@ export function railSpan(config: RailConfig): number {
 /**
  * Fold any x into [0, span).
  *
- * The strip loops forever under the cursor, so each card's x is folded
+ * The strip loops forever under the cursor, so each pane's x is folded
  * back into a single period. Exact periodicity is the whole point — see
- * the test — because a card that lands even a fraction off where its
+ * the test — because a pane that lands even a fraction off where its
  * predecessor was is a visible jump once a cycle.
  */
 export function wrapX(x: number, span: number): number {

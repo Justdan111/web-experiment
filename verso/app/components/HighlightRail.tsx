@@ -4,10 +4,9 @@ import Image from "next/image";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import {
-  DESKTOP_RAIL,
-  MOBILE_RAIL,
-  TABLET_RAIL,
+  SSR_WIDTH,
   cardHeight,
+  railConfig,
   railLayout,
   railSpan,
   wrapX,
@@ -15,12 +14,6 @@ import {
 } from "../lib/rail";
 import { WORKS } from "../content/works";
 import { gsap, prefersReducedMotion, registerGsap } from "../lib/gsap";
-
-function configFor(width: number): RailConfig {
-  if (width < 768) return MOBILE_RAIL;
-  if (width < 1200) return TABLET_RAIL;
-  return DESKTOP_RAIL;
-}
 
 // useLayoutEffect warns when it runs on the server, since it never fires
 // there. Falling back to useEffect for that pass is safe: SSR has no
@@ -30,7 +23,7 @@ const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffec
 export default function HighlightRail() {
   const stage = useRef<HTMLElement>(null);
   const track = useRef<HTMLDivElement>(null);
-  const [config, setConfig] = useState<RailConfig>(DESKTOP_RAIL);
+  const [config, setConfig] = useState<RailConfig>(() => railConfig(SSR_WIDTH));
 
   // Resolve the config in its own effect, never inside the useGSAP that
   // drives the track: swapping the card count re-renders, and a tween that
@@ -39,8 +32,8 @@ export default function HighlightRail() {
   // comparison is enough to keep resize from re-rendering on every pixel.
   useIsomorphicLayoutEffect(() => {
     const sync = () => {
-      const next = configFor(window.innerWidth);
-      setConfig((prev) => (prev === next ? prev : next));
+      const next = railConfig(window.innerWidth);
+      setConfig((prev) => (prev.cardWidth === next.cardWidth ? prev : next));
     };
     sync();
     window.addEventListener("resize", sync);
@@ -177,7 +170,7 @@ export default function HighlightRail() {
               const height = cardHeight(config);
               // Two frosted panes, not a default. Applied to every pane the
               // translucency turns the middle of the strip to grey mush.
-              const glass = card.index === 3 || card.index === 8;
+              const glass = card.index === 2 || card.index === 6;
               return (
                 <div
                   key={card.index}
@@ -217,10 +210,15 @@ export default function HighlightRail() {
         style={{ letterSpacing: "var(--track-16)" }}
       >
         <span style={{ color: "var(--muted)" }}>View All</span>
-        {/* The section's one label, bottom right. It used to repeat across
-            the top as a ticker, which drew a hard horizontal rule above a
-            diagonal composition and broke the illusion. */}
-        <span style={{ color: "var(--muted)" }}>Highlight</span>
+        {/* The section's one label, bottom right. Positive tracking here,
+            unlike every other label on the page — the optical scale tightens
+            as type grows, and this is the smallest type on the page. */}
+        <span
+          className="text-[12px] uppercase"
+          style={{ color: "var(--muted)", letterSpacing: "0.14em" }}
+        >
+          Highlight
+        </span>
       </div>
     </section>
   );

@@ -147,11 +147,14 @@ html {
 
 .rail-card {
   position: absolute;
-  /* Above centre so the rising end of the row crosses the header. */
-  top: 38%;
+  /* Centred: the row's rise means the left end sits low and the right end
+     high, so anything off centre leaves one corner crowded and the
+     opposite one empty. */
+  top: 50%;
   left: 0;
   /* Its own camera. 650px against a 30deg turn tapers the pane by about a
-     sixth, which is what the reference measures. */
+     tenth — softer lean than a harder turn, and enough taper to read as a
+     pane standing in space rather than a photo lying flat. */
   perspective: 650px;
 }
 
@@ -170,7 +173,7 @@ html {
   background: var(--hairline);
   /* The turn that gives the pane its taper. On the inner element because
      GSAP owns the outer one's transform. */
-  transform: rotateY(30deg);
+  transform: rotateY(15deg);
   transition:
     transform 620ms cubic-bezier(0.22, 1, 0.36, 1),
     opacity 620ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -180,22 +183,22 @@ html {
    pane it turns the middle of the strip to grey mush; the point is the
    alternation against opaque neighbours. */
 .rail-card--glass .rail-card-in {
-  opacity: 0.72;
+  opacity: 0.5;
 }
 
 .rail-card:hover .rail-card-in {
-  transform: rotateY(30deg) translateZ(120px);
+  transform: rotateY(15deg) translateZ(120px);
   opacity: 1;
 }
 
 /* Its neighbours give way. :has() reaches the previous sibling, which no
    combinator can; the adjacent selector handles the next one. */
 .rail-card:has(+ .rail-card:hover) .rail-card-in {
-  transform: rotateY(30deg) translateX(-30px);
+  transform: rotateY(15deg) translateX(-30px);
 }
 
 .rail-card:hover + .rail-card .rail-card-in {
-  transform: rotateY(30deg) translateX(30px);
+  transform: rotateY(15deg) translateX(30px);
 }
 
 /* Caption, revealed with the pane. Nothing sits on one at rest. */
