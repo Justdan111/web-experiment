@@ -2,7 +2,7 @@ export type RailConfig = {
   /** How many panes ride the rail. */
   count: number;
   cardWidth: number;
-  /** Negative: panes overlap by OVERLAP of their width. */
+  /** Positive: clear background between panes. */
   gap: number;
 };
 
@@ -11,25 +11,25 @@ export type RailCard = {
   x: number;
 };
 
-/** Nine panes; seven fill the viewport and the other two are a scroll away. */
-export const COUNT = 9;
+/** How many panes are on screen at rest. */
+export const VISIBLE = 7;
 
 /**
- * Pane width as a fraction of the viewport.
+ * Ten panes for seven on screen.
  *
- * Seven panes overlapping by 8% occupy 1 + 6 x 0.92 = 6.52 pane widths,
- * so 1/6.52 = 0.153 — divided by cos(ROTATE_Y), since the turn foreshortens
- * each pane, which puts the seventh pane's right edge on the viewport edge.
+ * The extra three are never all visible; they exist so the strip is wider
+ * than the viewport and a pane always has somewhere off screen to recycle.
+ * At exactly seven there is no slack, and the wrap opens a hole at the
+ * seam as the strip travels.
  */
-export const CARD_VW = 0.158;
+export const COUNT = 10;
 
 /**
- * Fraction of its width each pane hides under its neighbour, measured
- * BEFORE the Y turn. The turn foreshortens each pane, so a fifth here
- * reads as nearer a third on screen — enough to fuse the strip into one
- * mass. At 8% it reads as a deck.
+ * Space between panes as a fraction of pane width. Positive: they no
+ * longer touch, so the background reads between them and they stand as
+ * separate panes rather than a stacked deck.
  */
-export const OVERLAP = 0.08;
+export const GAP_RATIO = 0.12;
 
 /**
  * How far each pane is turned about its own vertical axis, in degrees.
@@ -41,6 +41,18 @@ export const OVERLAP = 0.08;
  */
 export const ROTATE_Y = 15;
 
+/**
+ * Pane width as a fraction of the viewport, derived rather than dialled in
+ * so VISIBLE panes keep filling the viewport whatever the gap or turn.
+ *
+ * VISIBLE panes separated by GAP_RATIO span VISIBLE + (VISIBLE-1) x GAP
+ * pane widths. The Y turn then projects each at cos(ROTATE_Y) of its
+ * width, so dividing through by that lands the last pane's edge on the
+ * viewport edge rather than short of it.
+ */
+export const CARD_VW =
+  1 / ((VISIBLE + (VISIBLE - 1) * GAP_RATIO) * Math.cos((ROTATE_Y * Math.PI) / 180));
+
 /** Panes are 3:4 portrait, as the reference's are. */
 export const CARD_ASPECT = 4 / 3;
 
@@ -49,7 +61,7 @@ export const SSR_WIDTH = 1440;
 
 export function railConfig(viewportWidth: number): RailConfig {
   const cardWidth = Math.round(viewportWidth * CARD_VW);
-  return { count: COUNT, cardWidth, gap: -Math.round(cardWidth * OVERLAP) };
+  return { count: COUNT, cardWidth, gap: Math.round(cardWidth * GAP_RATIO) };
 }
 
 export function cardHeight(config: RailConfig): number {

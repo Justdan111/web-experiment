@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   CARD_ASPECT,
   COUNT,
-  OVERLAP,
+  GAP_RATIO,
+  VISIBLE,
+  ROTATE_Y,
   cardHeight,
   railConfig,
   railLayout,
@@ -13,7 +15,7 @@ import {
 const AT_1440 = railConfig(1440);
 
 describe("railConfig", () => {
-  it("rides nine panes at every width", () => {
+  it("rides ten panes at every width", () => {
     for (const w of [375, 900, 1440, 2560]) {
       expect(railConfig(w).count).toBe(COUNT);
     }
@@ -24,19 +26,26 @@ describe("railConfig", () => {
     expect(railConfig(1440).cardWidth / 1440).toBeCloseTo(railConfig(2560).cardWidth / 2560, 2);
   });
 
-  it("sizes the pane so exactly seven fill the viewport", () => {
-    // Seven panes overlapping by a fifth span 1 + 6 x 0.8 = 5.8 widths, so
-    // the seventh's right edge should land on the viewport edge.
+  it("sizes the pane so exactly VISIBLE of them fill the viewport", () => {
+    // Measured after the Y turn, which projects each pane at cos(ROTATE_Y)
+    // of its width — the reason CARD_VW divides through by it.
+    const shrink = Math.cos((ROTATE_Y * Math.PI) / 180);
     for (const w of [1024, 1440, 1920]) {
       const c = railConfig(w);
-      const run = c.cardWidth + 6 * (c.cardWidth + c.gap);
+      const run = (c.cardWidth + (VISIBLE - 1) * (c.cardWidth + c.gap)) * shrink;
       expect(run / w).toBeCloseTo(1, 1);
     }
   });
 
-  it("overlaps neighbours by a fifth of a pane", () => {
+  it("leaves clear background between panes rather than overlapping them", () => {
+    expect(AT_1440.gap).toBeGreaterThan(0);
+    expect(AT_1440.gap / AT_1440.cardWidth).toBeCloseTo(GAP_RATIO, 2);
+  });
+
+  it("carries more panes than fit, so the loop always has one to recycle", () => {
     const step = AT_1440.cardWidth + AT_1440.gap;
-    expect(1 - step / AT_1440.cardWidth).toBeCloseTo(OVERLAP, 2);
+    expect(COUNT).toBeGreaterThan(VISIBLE);
+    expect(railSpan(AT_1440)).toBeGreaterThan(1440 + step);
   });
 });
 
