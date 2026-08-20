@@ -6,7 +6,6 @@ anyway, because it costs nothing and it is the right thing to do.
 
 | File | Source | Photographer | Licence |
 | --- | --- | --- | --- |
-| `hero.mp4` / `hero-poster.jpg` | https://www.pexels.com/video/light-refraction-though-textured-glass-6602733/ | Allan Zander Chris Urpina (@musikirongartist) | Pexels |
 | `work/terminal-grotesk.jpg` | https://unsplash.com/photos/G-vD2Cm5_CY | Bret Lama (@sepiatone) | Unsplash |
 | `work/atlas-of-quiet-places.jpg` | https://unsplash.com/photos/bmRi_tFC1vU | maks_d | Unsplash |
 | `work/signal-noise.jpg` | https://unsplash.com/photos/tmuArUNS1TI | Fran Jacquier (@fran_) | Unsplash |

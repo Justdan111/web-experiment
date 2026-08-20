@@ -27,3 +27,12 @@ export type NavItem = { label: string; href: string };
 
 /** A null timeZone means "resolve the visitor's own zone on the client". */
 export type ClockZone = { timeZone: string | null; city: string };
+
+/** A beat in the hero reel: one of Verso's words over one work still. */
+export type ReelBeat = {
+  word: string;
+  /** Slug of the work whose image backs this beat. */
+  slug: string;
+  /** The closing beat, which shows the wordmark and the signoff. */
+  mark?: boolean;
+};

@@ -1,12 +1,11 @@
 import SplitHeadline from "./SplitHeadline";
-import HeroVideo from "./HeroVideo";
+import HeroReel from "./HeroReel";
 import { HERO } from "../content/site";
 
 export default function Hero() {
   return (
     <section className="relative">
-      {/* Full-bleed loop. muted + playsInline are what make iOS autoplay at all. */}
-      <HeroVideo />
+      <HeroReel />
 
       <div className="mx-auto max-w-(--content) px-(--gutter) pt-24 pb-40 md:pt-32 md:pb-56">
         <SplitHeadline

@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { FIELD_WORKS, PRACTICE_WORKS, WORKS } from "./works";
 import { NEWS } from "./news";
-import { CLOCKS, FOOTER_COLUMNS, NAV } from "./site";
+import { CLOCKS, FOOTER_COLUMNS, NAV, REEL } from "./site";
 
 const BADGES = new Set(["T", "E", "P", "I", "W"]);
 const publicPath = (p: string) => join(process.cwd(), "public", p);
@@ -95,5 +95,27 @@ describe("site chrome", () => {
     expect(CLOCKS).toHaveLength(2);
     expect(CLOCKS[0].timeZone).toBeNull();
     expect(CLOCKS[1].timeZone).toBe("Asia/Tokyo");
+  });
+});
+
+describe("REEL", () => {
+  it("points every beat at a work that exists", () => {
+    // The hero component throws at module load on an unknown slug, which
+    // fails the build rather than the suite. Catch it here instead.
+    const slugs = new Set(WORKS.map((w) => w.slug));
+    for (const beat of REEL) {
+      expect(slugs.has(beat.slug), beat.slug).toBe(true);
+    }
+  });
+
+  it("gives every beat a word", () => {
+    for (const beat of REEL) {
+      expect(beat.word.trim(), beat.slug).not.toBe("");
+    }
+  });
+
+  it("closes on exactly one wordmark beat", () => {
+    expect(REEL.filter((b) => b.mark)).toHaveLength(1);
+    expect(REEL[REEL.length - 1].mark).toBe(true);
   });
 });

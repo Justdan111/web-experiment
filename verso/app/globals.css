@@ -101,6 +101,91 @@ html {
   will-change: transform, opacity;
 }
 
+/* ---- Hero reel ------------------------------------------------------
+   Beats of Verso's own words over work stills. Frames are hidden here in
+   CSS rather than in JS, unlike every other reveal on the page: the reel
+   is decorative and aria-hidden, so with no JS the first frame alone is a
+   perfectly good static hero rather than an empty band. --- */
+
+.reel {
+  background: var(--hairline);
+}
+
+.reel-frame {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.reel-frame:first-of-type {
+  opacity: 1;
+}
+
+.reel-img {
+  will-change: transform;
+}
+
+/* Enough to hold the type, not enough to flatten the still. */
+.reel-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    rgb(0 0 0 / 0.72) 0%,
+    rgb(0 0 0 / 0.44) 42%,
+    rgb(0 0 0 / 0.18) 100%
+  );
+}
+
+.reel-copy {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-inline: var(--gutter);
+  max-width: var(--content);
+  margin-inline: auto;
+}
+
+.reel-word {
+  color: #fff;
+  font-size: clamp(44px, 7.4vw, 108px);
+  line-height: 1.02;
+  /* Each word is clipped to its own line so it can slide up out of view
+     without bleeding over its neighbours. */
+  overflow: hidden;
+  will-change: transform, opacity;
+}
+
+.reel-word--mark {
+  color: var(--mark);
+}
+
+.reel-sub {
+  margin-top: 14px;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.7);
+}
+
+/* Shot progress, so the loop reads as a reel rather than a slideshow. */
+.reel-bar {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 2px;
+  background: rgb(255 255 255 / 0.14);
+}
+
+.reel-bar-fill {
+  height: 100%;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: var(--mark);
+}
+
 /* ---- Highlight rail -------------------------------------------------
    Panes standing in space, not photos lying on a table. Two things carry
    that, and both are easy to lose:
