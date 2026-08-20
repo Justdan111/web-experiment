@@ -125,7 +125,7 @@ html {
 
 /* The row carries the diagonal and nothing else. */
 .rail {
-  transform: rotateZ(9deg);
+  transform: rotateZ(-9deg);
   will-change: transform;
 }
 
@@ -141,7 +141,7 @@ html {
 
 @media (max-width: 767px) {
   .rail {
-    transform: rotateZ(11deg);
+    transform: rotateZ(-11deg);
   }
 }
 

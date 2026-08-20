@@ -75,7 +75,7 @@ export default function HighlightRail() {
       // rotation counters it and they stand upright. The Y turn lives in
       // CSS on the inner element, against each pane's own perspective.
       cards.forEach((card) => {
-        gsap.set(card, { yPercent: -50, rotation: -9 });
+        gsap.set(card, { yPercent: -50, rotation: 9 });
       });
       place();
 
