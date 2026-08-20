@@ -17,13 +17,19 @@ export const COUNT = 9;
 /**
  * Pane width as a fraction of the viewport.
  *
- * Seven panes overlapping by a fifth occupy 1 + 6 x 0.8 = 5.8 pane widths,
- * so 1/5.8 = 0.172 puts the seventh pane's right edge on the viewport edge.
+ * Seven panes overlapping by 8% occupy 1 + 6 x 0.92 = 6.52 pane widths,
+ * so 1/6.52 = 0.153 — divided by cos(ROTATE_Y), since the turn foreshortens
+ * each pane, which puts the seventh pane's right edge on the viewport edge.
  */
-export const CARD_VW = 0.172;
+export const CARD_VW = 0.158;
 
-/** Fraction of its width each pane hides under its neighbour. */
-export const OVERLAP = 0.2;
+/**
+ * Fraction of its width each pane hides under its neighbour, measured
+ * BEFORE the Y turn. The turn foreshortens each pane, so a fifth here
+ * reads as nearer a third on screen — enough to fuse the strip into one
+ * mass. At 8% it reads as a deck.
+ */
+export const OVERLAP = 0.08;
 
 /**
  * How far each pane is turned about its own vertical axis, in degrees.

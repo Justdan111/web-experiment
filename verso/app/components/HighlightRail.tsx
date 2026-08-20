@@ -71,15 +71,11 @@ export default function HighlightRail() {
         });
       };
 
-      // The row's -13deg rotateZ leans the cards as well as the line they
-      // sit on. Counter-rotating most of it back leaves the strip diagonal
-      // while the cards themselves stand very nearly upright, which is how
-      // the reference reads.
-      // rotation counters the row's -13deg so the panes stand upright. The
-      // Y turn lives in CSS on the inner element, against each pane's own
-      // perspective.
+      // The row's tilt leans the panes as well as the line they sit on, so
+      // rotation counters it and they stand upright. The Y turn lives in
+      // CSS on the inner element, against each pane's own perspective.
       cards.forEach((card) => {
-        gsap.set(card, { yPercent: -50, rotation: 13 });
+        gsap.set(card, { yPercent: -50, rotation: 9 });
       });
       place();
 
@@ -145,18 +141,8 @@ export default function HighlightRail() {
       className="relative flex h-screen flex-col justify-end overflow-clip pb-6"
       style={{ zIndex: 60 }}
     >
-      {/* pt-14 is the fixed nav's height. The wall still scrolls under the
-          nav, as the source does, but the ticker does not: 12px muted
-          uppercase interleaving with 16px muted nav labels reads as noise
-          rather than as layers.
-
-          z-10 on the two text edges: the stage is a positioned stacking
-          context, so without it the near cards paint over the copy. */}
-      {/* The strip is a full-height overlay rather than a row between the
-          two labels, so it reaches up over the fixed nav the way the
-          reference's does — the occlusion is what makes it read as a
-          physical object floating above the page rather than a banner
-          slotted into it. */}
+      {/* A full-height overlay rather than a row boxed between the labels,
+          so the panes bleed off every edge instead of being framed. */}
       <div className="rail-stage absolute inset-0">
         <div className="rail absolute inset-0">
           {/* Decorative, and aria-hidden deliberately. The reference draws
