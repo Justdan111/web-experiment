@@ -101,98 +101,192 @@ html {
   will-change: transform, opacity;
 }
 
-/* ---- Highlight rail -------------------------------------------------
-   The stage owns the perspective; the rail owns the rotation. Cards sit
-   flat at z=0 and let the projection supply their depth.
+/* ---- Hero reel ------------------------------------------------------
+   Beats of Verso's own words over work stills. Frames are hidden here in
+   CSS rather than in JS, unlike every other reveal on the page: the reel
+   is decorative and aria-hidden, so with no JS the first frame alone is a
+   perfectly good static hero rather than an empty band. --- */
 
-   perspective only reaches an element's own children, so .rail-stage has
-   to be the direct parent of .rail — anything in between flattens it. --- */
-
-.rail-stage {
-  /* Long perspective, shallow rotation: the reference's cards all read at
-     roughly the same size, so the projection has to be weak. */
-  perspective: 3200px;
-  perspective-origin: 50% 50%;
-  /* No fog. The old mask existed to hide cards being reborn at the loop's
-     wrap point; the strip no longer loops, so there is no seam to cover and
-     the cards simply run off the edges as the reference's do. */
+.reel {
+  background: var(--hairline);
 }
 
-.rail {
-  transform-style: preserve-3d;
-  /* Positive rotateY sends increasing card x AWAY from the camera; the
-     negative sign would pull the far end of the strip through the
-     perspective plane and blow those cards up to infinity.
+.reel-frame {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
 
-     The angle is deliberately shallow. A steeper one reads as a corridor
-     receding to a vanishing point, where the reference reads as a row of
-     cards standing side by side, all at comparable size — a long
-     perspective and a small rotation keep the falloff gentle. */
-  transform: translateZ(-260px) rotateY(15deg) rotateZ(-7deg);
+.reel-frame:first-of-type {
+  opacity: 1;
+}
+
+.reel-img {
   will-change: transform;
 }
 
-/* GSAP owns x on the track (scroll position) and x/y/scale on each card
-   (layout), so neither may carry a CSS transform — it would be overwritten
-   on the first tween. The track only needs to keep the 3D chain alive. */
+/* Enough to hold the type, not enough to flatten the still. */
+.reel-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    rgb(0 0 0 / 0.72) 0%,
+    rgb(0 0 0 / 0.44) 42%,
+    rgb(0 0 0 / 0.18) 100%
+  );
+}
+
+.reel-copy {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-inline: var(--gutter);
+  max-width: var(--content);
+  margin-inline: auto;
+}
+
+.reel-word {
+  color: #fff;
+  font-size: clamp(44px, 7.4vw, 108px);
+  line-height: 1.02;
+  /* Each word is clipped to its own line so it can slide up out of view
+     without bleeding over its neighbours. */
+  overflow: hidden;
+  will-change: transform, opacity;
+}
+
+.reel-word--mark {
+  color: var(--mark);
+}
+
+.reel-sub {
+  margin-top: 14px;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.7);
+}
+
+/* Shot progress, so the loop reads as a reel rather than a slideshow. */
+.reel-bar {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 2px;
+  background: rgb(255 255 255 / 0.14);
+}
+
+.reel-bar-fill {
+  height: 100%;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: var(--mark);
+}
+
+/* ---- Highlight rail -------------------------------------------------
+   Panes standing in space, not photos lying on a table. Two things carry
+   that, and both are easy to lose:
+
+   The perspective is SHORT. At 1600px a 30deg turn tapers a 220px pane by
+   about 6% — real 3D, but too slight to see, so the panes read as flat
+   parallelograms. 650px puts the taper near 16%, which is what the
+   reference measures.
+
+   The perspective sits on EACH PANE rather than on the row. One shared
+   short perspective does give the taper, but it projects from a single
+   point, so panes far from that point are seen from an angle and shear
+   and shrink — measured at 76% size variation across the strip, with the
+   far end pulling apart into gaps. Giving each pane its own perspective
+   projects every one head-on: same taper, same size, no edge distortion.
+   It is also nearer to what the WebGL original does, where every plane
+   meets the camera at the same angle. --- */
+
+.rail-stage {
+  perspective-origin: 50% 40%;
+}
+
+/* The row carries the diagonal and nothing else. */
+.rail {
+  transform: rotateZ(-9deg);
+  will-change: transform;
+}
+
+/* GSAP owns x on the track (cursor position) and the full transform on
+   each pane, so neither may carry a CSS transform — it would be
+   overwritten on the first tween. The track only keeps the 3D chain
+   alive: any overflow, filter or opacity here would flatten everything
+   below it. */
 .rail-track {
   position: absolute;
   inset: 0;
-  transform-style: preserve-3d;
 }
 
-/* Narrow viewports: a 200px card is half the screen, so no amount of
-   push-back fits many of them. Flatten the Y rotation further so the
-   images stay readable and lean on a steeper Z tilt for the diagonal. */
 @media (max-width: 767px) {
-  .rail-stage {
-    perspective: 2400px;
-  }
-
   .rail {
-    transform: translateZ(-80px) rotateY(11deg) rotateZ(-13deg);
+    transform: rotateZ(-11deg);
   }
 }
 
 .rail-card {
   position: absolute;
+  /* Centred: the row's rise means the left end sits low and the right end
+     high, so anything off centre leaves one corner crowded and the
+     opposite one empty. */
   top: 50%;
   left: 0;
-  transform-style: preserve-3d;
+  /* Its own camera. 650px against a 30deg turn tapers the pane by about a
+     tenth — softer lean than a harder turn, and enough taper to read as a
+     pane standing in space rather than a photo lying flat. */
+  perspective: 650px;
 }
 
 /* The inner element carries the hover state so the outer one stays free
-   for GSAP's layout transform. Pulling the card toward the camera on z
-   rather than scaling it means the perspective does the growing, which is
-   what makes it read as stepping out of the row instead of inflating. */
+   for GSAP's transform. Pulling the pane toward the camera on z rather
+   than scaling it lets the perspective do the growing, which is what
+   makes it read as stepping out of the row instead of inflating.
+
+   Square corners, no shadow, no border: flat panes of glass on edge. */
 .rail-card-in {
   position: relative;
   height: 100%;
   width: 100%;
   overflow: hidden;
-  border-radius: 2px;
+  border-radius: 0;
   background: var(--hairline);
-  transform: translateZ(0);
+  /* The turn that gives the pane its taper. On the inner element because
+     GSAP owns the outer one's transform. */
+  transform: rotateY(15deg);
   transition:
     transform 620ms cubic-bezier(0.22, 1, 0.36, 1),
-    filter 620ms cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 620ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Frosted, and only on the two panes flagged for it. Applied to every
+   pane it turns the middle of the strip to grey mush; the point is the
+   alternation against opaque neighbours. */
+.rail-card--glass .rail-card-in {
+  opacity: 0.5;
 }
 
 .rail-card:hover .rail-card-in {
-  transform: translateZ(190px);
+  transform: rotateY(15deg) translateZ(120px);
+  opacity: 1;
 }
 
 /* Its neighbours give way. :has() reaches the previous sibling, which no
    combinator can; the adjacent selector handles the next one. */
 .rail-card:has(+ .rail-card:hover) .rail-card-in {
-  transform: translateX(-34px);
+  transform: rotateY(15deg) translateX(-30px);
 }
 
 .rail-card:hover + .rail-card .rail-card-in {
-  transform: translateX(34px);
+  transform: rotateY(15deg) translateX(30px);
 }
 
-/* Caption, revealed with the card. */
+/* Caption, revealed with the pane. Nothing sits on one at rest. */
 .rail-cap {
   position: absolute;
   inset-inline: 0;

@@ -1,81 +1,86 @@
 export type RailConfig = {
-  /** How many cards ride the rail. */
+  /** How many panes ride the rail. */
   count: number;
   cardWidth: number;
-  /**
-   * Distance between card edges, in rail space — before the projection.
-   * Perspective compresses the strip as it recedes, so a small positive
-   * gap here lands as the reference's roughly one-sixth overlap on screen.
-   * Overlapping in rail space collapses them into one accordion.
-   */
+  /** Positive: clear background between panes. */
   gap: number;
-  /** Max vertical wander, px, applied symmetrically. */
-  yJitter: number;
-  /** Max scale deviation from 1, applied symmetrically. */
-  scaleJitter: number;
 };
 
 export type RailCard = {
   index: number;
   x: number;
-  y: number;
-  scale: number;
 };
 
-export const DESKTOP_RAIL: RailConfig = {
-  count: 12,
-  cardWidth: 232,
-  gap: 10,
-  yJitter: 48,
-  scaleJitter: 0.08,
-};
-
-export const TABLET_RAIL: RailConfig = {
-  count: 10,
-  cardWidth: 205,
-  gap: 9,
-  yJitter: 36,
-  scaleJitter: 0.06,
-};
-
-export const MOBILE_RAIL: RailConfig = {
-  count: 8,
-  cardWidth: 165,
-  gap: 7,
-  yJitter: 20,
-  scaleJitter: 0.04,
-};
+/** How many panes are on screen at rest. */
+export const VISIBLE = 7;
 
 /**
- * Deterministic pseudo-random in [0, 1) from an integer seed.
+ * Ten panes for seven on screen.
  *
- * Deliberately not Math.random: the layout has to be identical on every
- * call so the rail does not reshuffle on re-render.
+ * The extra three are never all visible; they exist so the strip is wider
+ * than the viewport and a pane always has somewhere off screen to recycle.
+ * At exactly seven there is no slack, and the wrap opens a hole at the
+ * seam as the strip travels.
  */
-function noise(seed: number): number {
-  const n = Math.sin(seed * 12.9898) * 43758.5453;
-  return n - Math.floor(n);
+export const COUNT = 10;
+
+/**
+ * Space between panes as a fraction of pane width. Positive: they no
+ * longer touch, so the background reads between them and they stand as
+ * separate panes rather than a stacked deck.
+ */
+export const GAP_RATIO = 0.12;
+
+/**
+ * How far each pane is turned about its own vertical axis, in degrees.
+ *
+ * Per pane rather than on the row: one shared perspective projects from a
+ * single point, so panes far from it shear and shrink. Turning each in
+ * place against its own perspective projects them all head-on — same
+ * taper, same size — which is nearer to what the WebGL original does.
+ */
+export const ROTATE_Y = 15;
+
+/**
+ * Pane width as a fraction of the viewport, derived rather than dialled in
+ * so VISIBLE panes keep filling the viewport whatever the gap or turn.
+ *
+ * VISIBLE panes separated by GAP_RATIO span VISIBLE + (VISIBLE-1) x GAP
+ * pane widths. The Y turn then projects each at cos(ROTATE_Y) of its
+ * width, so dividing through by that lands the last pane's edge on the
+ * viewport edge rather than short of it.
+ */
+export const CARD_VW =
+  1 / ((VISIBLE + (VISIBLE - 1) * GAP_RATIO) * Math.cos((ROTATE_Y * Math.PI) / 180));
+
+/** Panes are 3:4 portrait, as the reference's are. */
+export const CARD_ASPECT = 4 / 3;
+
+/** The width the server renders at, before the client knows the viewport. */
+export const SSR_WIDTH = 1440;
+
+export function railConfig(viewportWidth: number): RailConfig {
+  const cardWidth = Math.round(viewportWidth * CARD_VW);
+  return { count: COUNT, cardWidth, gap: Math.round(cardWidth * GAP_RATIO) };
 }
 
-/** Signed jitter in [-amount, amount]. */
-function jitter(seed: number, amount: number): number {
-  return (noise(seed) * 2 - 1) * amount;
+export function cardHeight(config: RailConfig): number {
+  return Math.round(config.cardWidth * CARD_ASPECT);
 }
 
 /**
- * Card positions along the rail.
+ * Pane positions along the rail.
  *
- * All cards sit at z = 0 — the rail element carries the 3D rotation, so
- * perspective supplies the depth and the scale falloff. The jitter here is
- * only the organic wander on top of that.
+ * x only, and deliberately so. The panes sit on one straight line at a
+ * single height: the diagonal is the row's own rotateZ rather than a
+ * per-pane vertical step, and any size difference is the projection rather
+ * than a per-pane scale. Jittering either would only fight them.
  */
 export function railLayout(config: RailConfig): RailCard[] {
   const step = config.cardWidth + config.gap;
   return Array.from({ length: config.count }, (_, index) => ({
     index,
     x: index * step,
-    y: jitter(index + 1, config.yJitter),
-    scale: 1 + jitter(index + 101, config.scaleJitter),
   }));
 }
 
@@ -87,9 +92,9 @@ export function railSpan(config: RailConfig): number {
 /**
  * Fold any x into [0, span).
  *
- * The strip loops forever under the cursor, so each card's x is folded
+ * The strip loops forever under the cursor, so each pane's x is folded
  * back into a single period. Exact periodicity is the whole point — see
- * the test — because a card that lands even a fraction off where its
+ * the test — because a pane that lands even a fraction off where its
  * predecessor was is a visible jump once a cycle.
  */
 export function wrapX(x: number, span: number): number {

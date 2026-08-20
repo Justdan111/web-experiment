@@ -1,4 +1,4 @@
-import type { ClockZone, NavItem } from "./types";
+import type { ClockZone, NavItem, ReelBeat } from "./types";
 
 export const NAV: NavItem[] = [
   { label: "Field", href: "/field" },
@@ -30,6 +30,19 @@ export const HERO = {
     "Verso builds precise, quiet, and durable design systems for companies working at the edge of technology, culture, and language.",
   link: "Learn More",
 } as const;
+
+/**
+ * The hero reel's beats — Verso's own words, lifted from the statement
+ * below it, over a work still each. Stock footage with legible type in it
+ * always carries someone else's message; these are the studio's.
+ */
+export const REEL: ReelBeat[] = [
+  { word: "Precise", slug: "terminal-grotesk" },
+  { word: "Quiet", slug: "low-tide" },
+  { word: "Durable", slug: "halide-capital" },
+  { word: "Design systems", slug: "signal-noise" },
+  { word: "Verso", slug: "kiosk", mark: true },
+];
 
 export const FIELD = {
   label: "Field",

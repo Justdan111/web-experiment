@@ -4,9 +4,9 @@ import Image from "next/image";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import {
-  DESKTOP_RAIL,
-  MOBILE_RAIL,
-  TABLET_RAIL,
+  SSR_WIDTH,
+  cardHeight,
+  railConfig,
   railLayout,
   railSpan,
   wrapX,
@@ -14,13 +14,6 @@ import {
 } from "../lib/rail";
 import { WORKS } from "../content/works";
 import { gsap, prefersReducedMotion, registerGsap } from "../lib/gsap";
-import Ticker from "./Ticker";
-
-function configFor(width: number): RailConfig {
-  if (width < 768) return MOBILE_RAIL;
-  if (width < 1200) return TABLET_RAIL;
-  return DESKTOP_RAIL;
-}
 
 // useLayoutEffect warns when it runs on the server, since it never fires
 // there. Falling back to useEffect for that pass is safe: SSR has no
@@ -30,7 +23,7 @@ const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffec
 export default function HighlightRail() {
   const stage = useRef<HTMLElement>(null);
   const track = useRef<HTMLDivElement>(null);
-  const [config, setConfig] = useState<RailConfig>(DESKTOP_RAIL);
+  const [config, setConfig] = useState<RailConfig>(() => railConfig(SSR_WIDTH));
 
   // Resolve the config in its own effect, never inside the useGSAP that
   // drives the track: swapping the card count re-renders, and a tween that
@@ -39,8 +32,8 @@ export default function HighlightRail() {
   // comparison is enough to keep resize from re-rendering on every pixel.
   useIsomorphicLayoutEffect(() => {
     const sync = () => {
-      const next = configFor(window.innerWidth);
-      setConfig((prev) => (prev === next ? prev : next));
+      const next = railConfig(window.innerWidth);
+      setConfig((prev) => (prev.cardWidth === next.cardWidth ? prev : next));
     };
     sync();
     window.addEventListener("resize", sync);
@@ -60,14 +53,31 @@ export default function HighlightRail() {
       // Position first, unconditionally. GSAP owns the whole transform —
       // an inline one would be overwritten the moment a tween touches x,
       // taking y and scale (i.e. all the depth) with it.
-      cards.forEach((card, i) => {
-        gsap.set(card, {
-          yPercent: -50,
-          x: layout[i].x,
-          y: layout[i].y,
-          scale: layout[i].scale,
+      const span = railSpan(config);
+      const step = config.cardWidth + config.gap;
+      // Recycle two cards clear of either edge so none is ever seen being
+      // reborn inside the viewport.
+      const margin = step * 2;
+
+      // Rest a third of the way along rather than at the strip's left end.
+      // The row climbs to the right, so starting at x=0 frames only its
+      // low end and leaves the rise — the part that crosses the nav — off
+      // screen entirely.
+      let offset = -span * 0.34;
+
+      const place = () => {
+        cards.forEach((card, i) => {
+          gsap.set(card, { x: wrapX(layout[i].x + offset + margin, span) - margin });
         });
+      };
+
+      // The row's tilt leans the panes as well as the line they sit on, so
+      // rotation counters it and they stand upright. The Y turn lives in
+      // CSS on the inner element, against each pane's own perspective.
+      cards.forEach((card) => {
+        gsap.set(card, { yPercent: -50, rotation: 9 });
       });
+      place();
 
       if (prefersReducedMotion()) return;
 
@@ -76,17 +86,11 @@ export default function HighlightRail() {
       // the centre sets a speed rather than a position, so the strip keeps
       // travelling for as long as the cursor sits off-centre, and the
       // middle is a dead zone you can rest in to hover a card.
-      const span = railSpan(config);
-      const step = config.cardWidth + config.gap;
-      // Recycle two cards clear of either edge so no card is ever seen
-      // being reborn inside the viewport.
-      const margin = step * 2;
       const DEAD_ZONE = 0.14;
       const MAX_SPEED = 520; // px/sec at full deflection
 
       let wanted = 0;
       let speed = 0;
-      let offset = 0;
 
       const aim = (clientX: number) => {
         const box = stage.current?.getBoundingClientRect();
@@ -118,9 +122,7 @@ export default function HighlightRail() {
         speed += (wanted - speed) * 0.07;
         if (Math.abs(speed) < 0.01) return;
         offset += speed * gsap.ticker.deltaRatio() * (1 / 60);
-        cards.forEach((card, i) => {
-          gsap.set(card, { x: wrapX(layout[i].x + offset + margin, span) - margin });
-        });
+        place();
       };
       gsap.ticker.add(drive);
 
@@ -136,20 +138,12 @@ export default function HighlightRail() {
   return (
     <section
       ref={stage}
-      className="relative flex h-screen flex-col justify-between overflow-clip pt-14 pb-4"
+      className="relative flex h-screen flex-col justify-end overflow-clip pb-6"
+      style={{ zIndex: 60 }}
     >
-      {/* pt-14 is the fixed nav's height. The wall still scrolls under the
-          nav, as the source does, but the ticker does not: 12px muted
-          uppercase interleaving with 16px muted nav labels reads as noise
-          rather than as layers.
-
-          z-10 on the two text edges: the stage is a positioned stacking
-          context, so without it the near cards paint over the copy. */}
-      <div className="relative z-10">
-        <Ticker text="Highlight" />
-      </div>
-
-      <div className="rail-stage relative flex-1">
+      {/* A full-height overlay rather than a row boxed between the labels,
+          so the panes bleed off every edge instead of being framed. */}
+      <div className="rail-stage absolute inset-0">
         <div className="rail absolute inset-0">
           {/* Decorative, and aria-hidden deliberately. The reference draws
               this in a canvas, so it is invisible to assistive tech there
@@ -159,11 +153,14 @@ export default function HighlightRail() {
           <div ref={track} className="rail-track" aria-hidden="true">
             {layout.map((card) => {
               const work = WORKS[card.index % WORKS.length];
-              const height = Math.round(config.cardWidth * 1.55);
+              const height = cardHeight(config);
+              // Two frosted panes, not a default. Applied to every pane the
+              // translucency turns the middle of the strip to grey mush.
+              const glass = card.index === 2 || card.index === 6;
               return (
                 <div
                   key={card.index}
-                  className="rail-card"
+                  className={glass ? "rail-card rail-card--glass" : "rail-card"}
                   style={{ width: config.cardWidth, height }}
                 >
                   <div className="rail-card-in">
@@ -195,11 +192,19 @@ export default function HighlightRail() {
       </div>
 
       <div
-        className="relative z-10 mx-auto flex w-full max-w-(--content) items-center justify-between px-(--gutter) text-[16px]"
+        className="relative mx-auto flex w-full max-w-(--content) items-center justify-between px-(--gutter) text-[16px]"
         style={{ letterSpacing: "var(--track-16)" }}
       >
-        <span>Highlight</span>
         <span style={{ color: "var(--muted)" }}>View All</span>
+        {/* The section's one label, bottom right. Positive tracking here,
+            unlike every other label on the page — the optical scale tightens
+            as type grows, and this is the smallest type on the page. */}
+        <span
+          className="text-[12px] uppercase"
+          style={{ color: "var(--muted)", letterSpacing: "0.14em" }}
+        >
+          Highlight
+        </span>
       </div>
     </section>
   );
