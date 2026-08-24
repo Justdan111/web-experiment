@@ -18,6 +18,7 @@ if (!outDir || !basePath || !basePath.startsWith("/")) {
 
 const SCANNED = new Set([".html", ".css"]);
 const ATTR = /(?:src|href|poster)="(\/[^"]*)"/g;
+const SRCSET = /srcset="([^"]*)"/g;
 const CSS_URL = /url\(\s*["']?(\/[^"')]*)/g;
 
 // A hub served at the root has no prefix to escape from.
@@ -36,12 +37,31 @@ const escaped = new Map();
 
 for (const file of walk(outDir)) {
   const text = readFileSync(file, "utf8");
-  for (const pattern of [ATTR, CSS_URL]) {
-    for (const [, url] of text.matchAll(pattern)) {
+
+  // Handle regular attributes (src, href, poster)
+  for (const [, url] of text.matchAll(ATTR)) {
+    if (url.startsWith("//")) continue; // protocol-relative, not ours
+    if (inside(url)) continue;
+    if (!escaped.has(url)) escaped.set(url, file);
+  }
+
+  // Handle srcset (comma-separated candidates, each with optional descriptor)
+  for (const [, srcsetValue] of text.matchAll(SRCSET)) {
+    for (const candidate of srcsetValue.split(",")) {
+      const trimmed = candidate.trim();
+      const url = trimmed.split(/\s+/)[0]; // Extract URL part before descriptor
+      if (!url.startsWith("/")) continue; // Only check root-absolute URLs
       if (url.startsWith("//")) continue; // protocol-relative, not ours
       if (inside(url)) continue;
       if (!escaped.has(url)) escaped.set(url, file);
     }
+  }
+
+  // Handle CSS url() functions
+  for (const [, url] of text.matchAll(CSS_URL)) {
+    if (url.startsWith("//")) continue; // protocol-relative, not ours
+    if (inside(url)) continue;
+    if (!escaped.has(url)) escaped.set(url, file);
   }
 }
 

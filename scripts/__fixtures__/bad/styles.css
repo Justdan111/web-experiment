@@ -1,0 +1,11 @@
+body {
+  background: url(/media/bg.jpg);
+}
+
+.box {
+  background: url("/media/bg2.jpg");
+}
+
+.other {
+  background: url('/media/bg3.jpg');
+}
