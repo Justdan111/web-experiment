@@ -53,13 +53,13 @@ Cloudflare DNS
 
 Routing table:
 
-| Public URL | Dokploy app | Build path | Domain Path | Strip Path | Port |
+| Public URL | Dokploy app | Image | Domain Path | Strip Path | Port |
 | --- | --- | --- | --- | --- | --- |
-| `experiments.<domain>/` | `hub` | `/hub` | `/` | off | 80 |
-| `experiments.<domain>/verso` | `verso` | `/verso` | `/verso` | off | 80 |
-| `experiments.<domain>/fort` | `fort` | `/fort` | `/fort` | off | 80 |
+| `experiments.<domain>/` | `hub` | `ghcr.io/justdan111/hub:latest` | `/` | off | 80 |
+| `experiments.<domain>/verso` | `verso` | `ghcr.io/justdan111/verso:latest` | `/verso` | off | 80 |
+| `experiments.<domain>/fort` | `fort` | `ghcr.io/justdan111/fort:latest` | `/fort` | off | 80 |
 
-Three Dokploy applications, all pointed at this one Git repo, distinguished by **Build Path**. No repo restructuring is required to support this.
+Three Dokploy applications, each pulling a prebuilt image. Because CI builds the images (§7), Dokploy never clones the repo and the per-app **Build Path** an earlier draft specified is not needed — the distinction between apps lives in the image name instead. No repo restructuring is required either way.
 
 **Why Strip Path stays off:** the exported files are placed inside the image at the same path they are served from (`/usr/share/nginx/html/verso/…`). The container is then self-contained and testable with no proxy in front of it — `docker run -p 8080:80 verso` and `http://localhost:8080/verso` renders exactly what production serves. Stripping at the edge would make the container behave differently locally than in production, which is precisely the class of bug that is miserable to chase.
 
@@ -240,7 +240,7 @@ Secrets: `DOKPLOY_WEBHOOK_HUB`, `DOKPLOY_WEBHOOK_VERSO`, `DOKPLOY_WEBHOOK_FORT`.
 
 ## 8. Dokploy, DNS and TLS
 
-**Dokploy** — three applications, source type Git, same repository, Build Path per §3, Build Type **Docker** (registry image, not on-server build). If the repo is private, add a registry credential under Settings → Registry: a GitHub PAT with `read:packages`.
+**Dokploy** — three applications, provider **Docker**, each pointed at the image in §3 with the domain, path and port from that table. Deploys are triggered by the webhook CI calls after pushing a new `:latest`. If the repo is private, add a registry credential under Settings → Registry: a GitHub PAT with `read:packages`.
 
 **Cloudflare** — one `A` record, `experiments` → VPS IP.
 
