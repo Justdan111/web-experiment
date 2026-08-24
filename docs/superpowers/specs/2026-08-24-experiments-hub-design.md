@@ -1,7 +1,7 @@
 # Web Experiments — Hub & Deployment Design Spec
 
 **Date:** 2026-08-24
-**Status:** Awaiting review
+**Status:** Approved; §6 revised 2026-08-24 after an empirical build
 **Scope:** A single-page index of web experiments, plus the deployment architecture that puts every experiment on one host under its own path — self-hosted on Dokploy, behind Cloudflare DNS, built in GitHub Actions.
 
 ---
@@ -130,6 +130,8 @@ The `notes: boolean` flag and the presence of the MDX file can drift apart. A un
 
 Everything required to make a folder deployable. This list *is* the runbook in §10.
 
+> **Revised 2026-08-24.** An earlier draft of this section claimed the change was config-only and touched no component code. A real `output: 'export'` build of `verso` with `basePath: '/verso'` disproved that — see item 2. The finding below is measured, not assumed.
+
 **1. `next.config.ts`:**
 
 ```ts
@@ -146,7 +148,30 @@ const nextConfig: NextConfig = {
 - `trailingSlash: true` — every route becomes `<route>/index.html`, so nginx can serve directories and the config stays trivial. Without it, routes emit sibling `.html` files needing a `try_files $uri.html` fallback.
 - `images: { unoptimized: true }` — static export has no image optimization server. All images here are already local files, so this only forgoes Next's resizing; posters and hero art should be checked for sane dimensions.
 
-**2. `Dockerfile`** (build context is the app folder):
+**2. Prefix every `public/` asset reference.**
+
+`basePath` prefixes `_next/static` URLs, route links and metadata routes. **It does not prefix literal paths to files in `public/`.** A verified export of `verso` emitted 36 references to `/media/...` with no `/verso` prefix — every one of which would resolve against the *hub* container in production and 404, breaking every image on the page.
+
+Each app therefore gets a single module naming its own prefix, which `next.config.ts` also imports so the two can never drift:
+
+```ts
+// app/lib/base-path.ts
+export const BASE_PATH = "/verso";
+export const asset = (path: string) => `${BASE_PATH}${path}`;
+```
+
+`asset()` is applied where asset paths are *defined* — the content modules — so every consuming component is correct without being touched individually. Components holding literal paths inline (`fort/app/components/Landing.tsx`, `fort/app/components/RacketCursor.tsx`) are wrapped at the point of use.
+
+Known affected files:
+
+| App | Files holding `public/` paths |
+| --- | --- |
+| `verso` | `app/content/works.ts`, `app/content/news.ts` |
+| `fort` | `app/content.ts`, `app/components/Landing.tsx`, `app/components/RacketCursor.tsx` |
+
+This is enforced mechanically rather than by review — see `scripts/audit-export.mjs` in §9. Hand-auditing this for every future experiment is exactly the kind of check people stop doing.
+
+**3. `Dockerfile`** (build context is the app folder):
 
 ```dockerfile
 FROM node:22-alpine AS build
@@ -165,9 +190,9 @@ EXPOSE 80
 
 The `--mount=type=cache` line requires BuildKit, which `docker buildx` in Actions provides by default. The `COPY` of `pnpm-workspace.yaml` assumes every app has one — `verso` and `fort` do, and `hub` will once pnpm initialises it.
 
-**3. `.dockerignore`** — at minimum `node_modules`, `.next`, `out`, `.env*`, `.media-staging`, `.media-backup`. Without it the build context balloons and stale local build output can leak into the image.
+**4. `.dockerignore`** — at minimum `node_modules`, `.next`, `out`, `.env*`, `.media-staging`, `.media-backup`. Without it the build context balloons and stale local build output can leak into the image.
 
-**4. `nginx.conf`:**
+**5. `nginx.conf`:**
 
 ```nginx
 server {
@@ -187,9 +212,9 @@ server {
 
 Hashed `_next/static` assets are immutable and get a one-year cache; everything else falls back to nginx defaults so HTML revalidates.
 
-**5. One entry in `hub/content/experiments.ts`, and a poster in `hub/public/posters/`.**
+**6. One entry in `hub/content/experiments.ts`, and a poster in `hub/public/posters/`.**
 
-> **To verify during implementation, not assumed here:** the exact directory layout `out/` takes when `basePath` is set. Next's docs confirm `public/` is copied to the root of `out/`, but whether route files nest under a `verso/` directory decides whether the Dockerfile line is `COPY out /usr/share/nginx/html/verso` or `COPY out/verso /usr/share/nginx/html/verso`. The first implementation step is to run the build and look at the tree.
+> **Resolved by measurement, 2026-08-24.** A real export of `verso` at `basePath: '/verso'` produces a **flat** `out/` — `out/index.html`, `out/_next/`, `out/media/`, with no `verso/` directory. Assets are referenced as `/verso/_next/static/…`, and `public/` is copied to the root of `out/`. So `COPY --from=build /app/out /usr/share/nginx/html/verso` is correct, and font `url()` references inside the exported CSS are relative (`../media/…`), so they need no prefixing.
 
 ---
 
@@ -230,6 +255,7 @@ Acceptance criteria, in the order they should be checked:
 | # | Check | How |
 | --- | --- | --- |
 | 1 | Each app exports cleanly | `pnpm build` in each folder produces `out/` |
+| 1b | No asset escapes the basePath | `node scripts/audit-export.mjs <app>/out /<slug>` exits 0 |
 | 2 | Container serves the app standalone | `docker run -p 8080:80 <app>`, load `localhost:8080/<slug>` — page renders, **no 404s in the network panel**, fonts and images load |
 | 3 | Deep links work | a non-root route in the app loads directly, not just via client nav |
 | 4 | Hub links leave the app | cards are `<a>`, confirmed by a test grepping the index page for `next/link` |
@@ -260,7 +286,8 @@ No DNS change. No CI change. The hub redeploys only to show the new card, never 
 
 | Risk | Mitigation |
 | --- | --- |
-| `out/` layout under `basePath` differs from assumption | Verified by build inspection as implementation step 1, before the Dockerfile is written |
+| A `public/` asset reference escapes the basePath and 404s against a sibling container | `scripts/audit-export.mjs` fails the build on any root-absolute reference outside the prefix; runs in CI for every app on every push |
+| Adding an experiment reintroduces the same escaped-asset bug | Same audit script — it is generic over app and prefix, so a new experiment is covered the day it is added |
 | Traefik path priority — hub's `/` shadowing `/verso` | Traefik sorts rules by specificity, so the longer prefix should win; verified explicitly as check 7 |
 | Let's Encrypt fails behind Cloudflare proxy | Documented sequencing in §8 — issue on grey cloud, then proxy |
 | Private GHCR pull fails on the VPS | Registry credential configured in Dokploy before first deploy |
