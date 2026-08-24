@@ -25,7 +25,7 @@ export const experiments: Experiment[] = [
     year: 2026,
     href: "/verso/",
     poster: "/posters/verso.webp",
-    notes: false,
+    notes: true,
     status: "live",
   },
   {
