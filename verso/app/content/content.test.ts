@@ -4,9 +4,11 @@ import { describe, expect, it } from "vitest";
 import { FIELD_WORKS, PRACTICE_WORKS, WORKS } from "./works";
 import { NEWS } from "./news";
 import { CLOCKS, FOOTER_COLUMNS, NAV, REEL } from "./site";
+import { BASE_PATH } from "../lib/base-path";
 
 const BADGES = new Set(["T", "E", "P", "I", "W"]);
-const publicPath = (p: string) => join(process.cwd(), "public", p);
+const publicPath = (p: string) =>
+  join(process.cwd(), "public", p.replace(BASE_PATH, ""));
 
 describe("WORKS", () => {
   it("has the twelve works the highlight rail needs", () => {

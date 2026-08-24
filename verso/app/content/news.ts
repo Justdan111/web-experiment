@@ -1,4 +1,5 @@
 import type { NewsItem } from "./types";
+import { asset } from "../lib/base-path";
 
 export const NEWS: NewsItem[] = [
   {
@@ -6,7 +7,7 @@ export const NEWS: NewsItem[] = [
     category: "VERSO WALK",
     date: "3/14/26",
     headline: "Verso Walk Lisbon: light, tile, and repetition",
-    image: "/media/news/walk-lisbon.jpg",
+    image: asset("/media/news/walk-lisbon.jpg"),
     accent: "--mark",
   },
   {
@@ -14,7 +15,7 @@ export const NEWS: NewsItem[] = [
     category: "VERSO WALK",
     date: "11/2/25",
     headline: "Verso Walk Kyoto: on restraint",
-    image: "/media/news/walk-kyoto.jpg",
+    image: asset("/media/news/walk-kyoto.jpg"),
     accent: "--mark",
   },
   {
@@ -22,7 +23,7 @@ export const NEWS: NewsItem[] = [
     category: "PRACTICE",
     date: "9/18/25",
     headline: "Verso partners with Halide Capital on a full rebrand",
-    image: "/media/news/halide-partnership.jpg",
+    image: asset("/media/news/halide-partnership.jpg"),
     accent: "--accent-practice",
   },
   {
@@ -30,7 +31,7 @@ export const NEWS: NewsItem[] = [
     category: "INDEX",
     date: "7/25/25",
     headline: "Verso Field opens applications for the 2026 residency",
-    image: "/media/news/field-residency.jpg",
+    image: asset("/media/news/field-residency.jpg"),
     accent: "--accent-index",
   },
 ];

@@ -1,4 +1,5 @@
 import type { Work } from "./types";
+import { asset } from "../lib/base-path";
 
 export const WORKS: Work[] = [
   {
@@ -6,7 +7,7 @@ export const WORKS: Work[] = [
     title: "Terminal Grotesk",
     subtitle: "Variable Typeface, 9 Weights",
     badges: ["T"],
-    image: "/media/work/terminal-grotesk.jpg",
+    image: asset("/media/work/terminal-grotesk.jpg"),
     wide: false,
   },
   {
@@ -14,7 +15,7 @@ export const WORKS: Work[] = [
     title: "Atlas of Quiet Places",
     subtitle: "Editorial & Photographic Study",
     badges: ["E"],
-    image: "/media/work/atlas-of-quiet-places.jpg",
+    image: asset("/media/work/atlas-of-quiet-places.jpg"),
     wide: false,
   },
   {
@@ -22,7 +23,7 @@ export const WORKS: Work[] = [
     title: "Signal / Noise",
     subtitle: "Generative Poster Series",
     badges: ["E", "W"],
-    image: "/media/work/signal-noise.jpg",
+    image: asset("/media/work/signal-noise.jpg"),
     wide: true,
   },
   {
@@ -30,7 +31,7 @@ export const WORKS: Work[] = [
     title: "Halide Capital",
     subtitle: "Brand Identity & Digital Platform",
     badges: ["I", "W"],
-    image: "/media/work/halide-capital.jpg",
+    image: asset("/media/work/halide-capital.jpg"),
     wide: true,
   },
   {
@@ -38,7 +39,7 @@ export const WORKS: Work[] = [
     title: "Nomad Audio",
     subtitle: "In progress",
     badges: ["P"],
-    image: "/media/work/nomad-audio.jpg",
+    image: asset("/media/work/nomad-audio.jpg"),
     wide: false,
   },
   {
@@ -46,7 +47,7 @@ export const WORKS: Work[] = [
     title: "Orbital Health",
     subtitle: "Interface System",
     badges: ["W", "P"],
-    image: "/media/work/orbital-health.jpg",
+    image: asset("/media/work/orbital-health.jpg"),
     wide: false,
   },
   {
@@ -54,7 +55,7 @@ export const WORKS: Work[] = [
     title: "Kiosk",
     subtitle: "Retail Identity",
     badges: ["I"],
-    image: "/media/work/kiosk.jpg",
+    image: asset("/media/work/kiosk.jpg"),
     wide: false,
   },
   {
@@ -62,7 +63,7 @@ export const WORKS: Work[] = [
     title: "Meridian Press",
     subtitle: "Imprint & Book Design",
     badges: ["E", "I"],
-    image: "/media/work/meridian-press.jpg",
+    image: asset("/media/work/meridian-press.jpg"),
     wide: false,
   },
   {
@@ -70,7 +71,7 @@ export const WORKS: Work[] = [
     title: "Bell & Bone",
     subtitle: "Packaging System",
     badges: ["P", "I"],
-    image: "/media/work/bell-and-bone.jpg",
+    image: asset("/media/work/bell-and-bone.jpg"),
     wide: false,
   },
   {
@@ -78,7 +79,7 @@ export const WORKS: Work[] = [
     title: "Grain Type Specimen",
     subtitle: "Specimen Site",
     badges: ["T", "W"],
-    image: "/media/work/grain-specimen.jpg",
+    image: asset("/media/work/grain-specimen.jpg"),
     wide: false,
   },
   {
@@ -86,7 +87,7 @@ export const WORKS: Work[] = [
     title: "Verso Rebrand",
     subtitle: "Studio Identity",
     badges: ["I"],
-    image: "/media/work/verso-rebrand.jpg",
+    image: asset("/media/work/verso-rebrand.jpg"),
     wide: false,
   },
   {
@@ -94,7 +95,7 @@ export const WORKS: Work[] = [
     title: "Low Tide",
     subtitle: "Photographic Series",
     badges: ["E"],
-    image: "/media/work/low-tide.jpg",
+    image: asset("/media/work/low-tide.jpg"),
     wide: false,
   },
 ];
