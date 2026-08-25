@@ -19,3 +19,7 @@ cd verso && pnpm install && pnpm dev     # one experiment
 docker compose -f docker-compose.local.yml up --build   # all of them, path-routed
 ./scripts/smoke.sh                                       # verify nothing 404s
 ```
+
+Running a single experiment serves it at its path prefix: `verso` at `http://localhost:3000/verso/`,
+`fort` at `http://localhost:3000/fort/`, `hub` at `http://localhost:3000/`.
+(Next's startup banner shows the root — ignore it for prefixed apps.)

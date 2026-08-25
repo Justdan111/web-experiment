@@ -100,6 +100,8 @@ Exit 0 means every page and every asset it references returned 200.
 2. Add `app/lib/base-path.ts` with the new slug, and the four config lines in
    `next.config.ts` (`output: "export"`, `basePath: BASE_PATH`,
    `trailingSlash: true`, `images: { unoptimized: true }`).
+   In development, `pnpm dev` serves the app at `http://localhost:3000/<slug>/`
+   (not `/`), because `basePath` applies in development too.
 3. Wrap every `public/` path in `asset()`.
 4. Make sure the folder has a `pnpm-workspace.yaml`. `create-next-app` +
    `pnpm install` does not reliably produce one — pnpm only writes it when it
