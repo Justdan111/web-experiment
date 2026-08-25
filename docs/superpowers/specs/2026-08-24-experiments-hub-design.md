@@ -171,26 +171,53 @@ Known affected files:
 
 This is enforced mechanically rather than by review — see `scripts/audit-export.mjs` in §9. Hand-auditing this for every future experiment is exactly the kind of check people stop doing.
 
-**3. `Dockerfile`** (build context is the app folder):
+**3. `Dockerfile`** (build context is the **repo root**, not the app folder):
 
 ```dockerfile
+# Build context is the REPO ROOT, so that scripts/ is reachable:
+#   docker build -f verso/Dockerfile -t verso .
 FROM node:22-alpine AS build
-WORKDIR /app
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+WORKDIR /app
+
+COPY verso/package.json verso/pnpm-lock.yaml verso/pnpm-workspace.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-COPY . .
+
+COPY verso/ ./
 RUN pnpm build
+
+# An image cannot exist with assets that escape the path prefix.
+COPY scripts/audit-export.mjs /audit.mjs
+RUN node /audit.mjs out /verso
 
 FROM nginx:alpine
 COPY --from=build /app/out /usr/share/nginx/html/verso
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY verso/nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 ```
 
-The `--mount=type=cache` line requires BuildKit, which `docker buildx` in Actions provides by default. The `COPY` of `pnpm-workspace.yaml` assumes every app has one — `verso` and `fort` do, and `hub` will once pnpm initialises it.
+The build context has to be the repo root, not the app folder, because the audit step needs `scripts/audit-export.mjs` — a per-app context can't `COPY` a file that lives outside it. That's also why every `COPY` from the build context is prefixed with the app's folder name (`verso/package.json`, not `package.json`). The `--mount=type=cache` line requires BuildKit, which `docker buildx` in Actions provides by default. The `COPY` of `pnpm-workspace.yaml` assumes every app has one. pnpm does not always write that file on its own — it appears only when pnpm needs to record something like `ignoredBuiltDependencies`, which is why `verso`, `fort` and `hub` all have one today. A new experiment that never trips that condition won't get one, and the `COPY` fails the build with "no such file or directory." See `docs/deployment.md`'s "Adding an experiment" section.
 
-**4. `.dockerignore`** — at minimum `node_modules`, `.next`, `out`, `.env*`, `.media-staging`, `.media-backup`. Without it the build context balloons and stale local build output can leak into the image.
+The audit step is not optional per-app boilerplate: without it, an experiment can export assets that 404 against a sibling container in production with nothing catching it before the image ships (§9, §11).
+
+**4. `.dockerignore`** — one at the **repo root**, since the build context is the repo root:
+
+```
+**/node_modules
+**/.next
+**/out
+**/.env
+**/.env.*
+**/.media-staging
+**/.media-backup
+**/*.tsbuildinfo
+.git
+docs
+```
+
+Docker resolves `.dockerignore` relative to the build **context**, not the Dockerfile's own directory — so a per-app `.dockerignore` would be silently ignored while the context is the repo root. Without a root one, the build context balloons and stale local build output (including other apps') can leak into the image.
 
 **5. `nginx.conf`:**
 
@@ -225,10 +252,12 @@ One workflow, `.github/workflows/deploy.yml`, on push to `main`.
 ```
 detect  → any top-level dir containing a Dockerfile that has changed in this push
 build   → matrix over those dirs
-          docker buildx build ./<app>
+          docker buildx build . -f <app>/Dockerfile   (context is the repo root)
           push ghcr.io/<owner>/<app>:<sha> and :latest
 deploy  → curl the app's Dokploy webhook
 ```
+
+The build context is the repo root — not `./<app>` — because each app's Dockerfile needs `scripts/audit-export.mjs` (§6 item 3), which lives outside the app folder. `docker/build-push-action` is called with `context: .` and `file: ./<app>/Dockerfile`.
 
 **App discovery is filesystem-driven** — "every top-level directory containing a Dockerfile" — so adding an experiment requires no workflow edit. Combined with a `git diff` against the previous commit, pushing a change to `verso/` builds only `verso`.
 
@@ -274,7 +303,7 @@ Checks 4–6 are vitest tests in `hub/`, matching the existing `vitest run` setu
 1. `mkdir newthing/`, build whatever you want in it.
 2. Apply the §6 contract: four config lines, `Dockerfile`, `nginx.conf` (copy from `verso/`, change the slug).
 3. Add an entry to `hub/content/experiments.ts` and a poster to `hub/public/posters/`.
-4. In Dokploy: new application, same repo, Build Path `/newthing`, domain `experiments.<domain>` with Path `/newthing`.
+4. In Dokploy: new application, provider **Docker** pulling `ghcr.io/<owner>/newthing:latest` (CI has already built and pushed it — Dokploy never clones the repo, so there is no Build Path to set), domain `experiments.<domain>` with Path `/newthing`.
 5. Add the `DOKPLOY_WEBHOOK_NEWTHING` secret.
 6. Push.
 
