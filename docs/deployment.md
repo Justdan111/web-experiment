@@ -79,6 +79,13 @@ front. Stripping would break that symmetry and make local testing a lie.
 
 Enable HTTPS with the Let's Encrypt certificate provider on each.
 
+**Image architecture.** `docker/build-push-action` in `deploy.yml` sets no
+`platforms:`, so images build for the GitHub-hosted runner's architecture —
+`linux/amd64`. If the VPS is arm64 (common on cheap ARM hosting), the pull
+will succeed but the container will fail to start. If that's the case here,
+add `platforms: linux/arm64` (or `linux/amd64,linux/arm64` for a multi-arch
+image) to the `build-push-action` step.
+
 ## Verifying a deploy
 
 ```bash
@@ -94,18 +101,34 @@ Exit 0 means every page and every asset it references returned 200.
    `next.config.ts` (`output: "export"`, `basePath: BASE_PATH`,
    `trailingSlash: true`, `images: { unoptimized: true }`).
 3. Wrap every `public/` path in `asset()`.
-4. Copy `Dockerfile` and `nginx.conf` from `verso/`, changing the slug in both.
-5. Add an entry to `hub/content/experiments.ts` and a poster to
+4. Make sure the folder has a `pnpm-workspace.yaml`. `create-next-app` +
+   `pnpm install` does not reliably produce one — pnpm only writes it when it
+   needs to record something like `ignoredBuiltDependencies`, which is why
+   `verso`, `fort` and `hub` happen to have one today. Every Dockerfile does
+   `COPY <app>/package.json <app>/pnpm-lock.yaml <app>/pnpm-workspace.yaml ./`,
+   and Docker's `COPY` errors on a missing source — so a new experiment
+   without this file fails its first CI build with a `COPY failed: no such
+   file or directory` and no obvious pointer back to the cause. If pnpm
+   didn't create one, add an empty `pnpm-workspace.yaml` (or copy the
+   `ignoredBuiltDependencies` block from a sibling app) before the first push.
+5. Copy `Dockerfile` and `nginx.conf` from `verso/`, changing the slug in both.
+6. Add an entry to `hub/content/experiments.ts` and a poster to
    `hub/public/posters/`.
-6. Verify locally: add it to `docker-compose.local.yml` and `proxy/nginx.conf`,
-   then `./scripts/smoke.sh`.
-7. Create the Dokploy application per the table above.
-8. Add the `DOKPLOY_WEBHOOK_<SLUG>` secret to GitHub.
-9. Push.
+7. Verify locally: add it to `docker-compose.local.yml` and `proxy/nginx.conf`,
+   then `./scripts/smoke.sh`. Nothing to add to the smoke test itself — it
+   discovers pages by crawling `/` and queuing any link that looks like a
+   route (`^(/[a-z0-9]+)+/$`), so the new experiment's page and assets are
+   checked the moment the hub links to it.
+8. Create the Dokploy application per the table above.
+9. Add the `DOKPLOY_WEBHOOK_<SLUG>` secret to GitHub.
+10. Push.
 
 No DNS change. No CI change — the workflow discovers any folder with a
 Dockerfile. The slug must be lowercase alphanumeric; the hub's test suite
-enforces it, because the CI secret name is derived from it.
+enforces it, because the CI secret name is derived from it. That test suite
+also rejects a slug the hub reserves for itself (`notes`, `posters`, `_next`,
+`favicon.ico`) — those would otherwise get a Traefik `PathPrefix` that wins
+on length and takes the path from the hub.
 
 **A caution about the `next/link` guard.** The test that stops the hub from
 client-navigating into a different container (`hub/app/page.test.ts`) works
