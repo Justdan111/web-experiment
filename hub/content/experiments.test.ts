@@ -21,6 +21,16 @@ describe("experiments", () => {
     }
   });
 
+  it("never uses a slug the hub reserves for itself", () => {
+    // The hub answers /notes/*, /posters/*, /_next/* and /favicon.ico at the
+    // root. An experiment folder named e.g. "notes" would get a Traefik
+    // PathPrefix that wins on length and takes that path from the hub.
+    const reserved = new Set(["notes", "posters", "_next", "favicon.ico"]);
+    for (const e of experiments) {
+      expect(reserved.has(e.slug), e.slug).toBe(false);
+    }
+  });
+
   it("points each entry at a folder that actually exists in the repo", () => {
     for (const e of experiments) {
       expect(existsSync(join(repoRoot, e.slug)), e.slug).toBe(true);
