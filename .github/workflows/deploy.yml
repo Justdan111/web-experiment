@@ -43,8 +43,41 @@ jobs:
           fi
           echo "changed: ${apps[*]:-none}"
 
-  build:
+  test:
     needs: detect
+    if: needs.detect.outputs.apps != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.detect.outputs.apps) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: ${{ matrix.app }}/pnpm-lock.yaml
+
+      # Runs in the app's own directory, against a real checkout — not inside
+      # the Docker build. hub/content/experiments.test.ts resolves the repo
+      # root as `..` from its own cwd, which only holds true here; running it
+      # via `RUN pnpm test` inside the image would resolve `..` to `/`.
+      - name: Install dependencies
+        working-directory: ${{ matrix.app }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        working-directory: ${{ matrix.app }}
+        run: pnpm test
+
+  build:
+    needs: [detect, test]
     if: needs.detect.outputs.apps != '[]'
     runs-on: ubuntu-latest
     permissions:
