@@ -114,8 +114,10 @@ Exit 0 means every page and every asset it references returned 200.
    didn't create one, add an empty `pnpm-workspace.yaml` (or copy the
    `ignoredBuiltDependencies` block from a sibling app) before the first push.
 5. Copy `Dockerfile` and `nginx.conf` from `verso/`, changing the slug in both.
-6. Add an entry to `hub/content/experiments.ts` and a poster to
-   `hub/public/posters/`.
+6. Add an entry to `hub/content/experiments.ts` (including its `caseStudy`
+   block) and a poster to `hub/public/posters/`. Write the case study at
+   `hub/content/case-studies/<slug>.mdx` and register it in
+   `hub/content/case-studies/index.ts` — the hub's tests fail without both.
 7. Verify locally: add it to `docker-compose.local.yml` and `proxy/nginx.conf`,
    then `./scripts/smoke.sh`. Nothing to add to the smoke test itself — it
    discovers pages by crawling `/` and queuing any link that looks like a
@@ -132,14 +134,16 @@ also rejects a slug the hub reserves for itself (`notes`, `posters`, `_next`,
 `favicon.ico`) — those would otherwise get a Traefik `PathPrefix` that wins
 on length and takes the path from the hub.
 
-**A caution about the `next/link` guard.** The test that stops the hub from
-client-navigating into a different container (`hub/app/page.test.ts`) works
-by reading `hub/app/page.tsx`'s source text and asserting it doesn't import
-`next/link`. That's a text match against one specific file path, not a type
-check or a render check — so it silently stops enforcing anything the moment
-the experiment card markup is pulled out into its own component file. If you
-ever refactor the hub's card rendering, either keep the assertion pointed at
-whichever file ends up rendering the `<a href>`, or move the check with it.
+**The `next/link` guard.** The test that stops the hub from client-navigating
+into a different container (`hub/app/page.test.ts`) used to read
+`hub/app/page.tsx`'s source text by path — which would have stopped enforcing
+anything the moment the card markup moved into its own component file. It since
+has, so the guard now walks every `.tsx` under `hub/app/` and asserts none of
+them imports `next/link`, and asserts it found files to check at all. The rule
+is deliberately blanket: internal hub routes could legitimately use `next/link`,
+but the hub is a small static export where prefetch buys nothing, and a rule
+with no exceptions cannot quietly stop applying. `@next/next/no-html-link-for-pages`
+is switched off in `hub/eslint.config.mjs` because it argues the opposite.
 
 ## If an experiment needs a server
 

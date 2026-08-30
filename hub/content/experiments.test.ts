@@ -50,10 +50,13 @@ describe("experiments", () => {
     }
   });
 
-  it("sets notes: true exactly when the writeup file exists", () => {
+  it("leaves no per-slug page under app/notes — one route renders them all", () => {
+    // Case studies moved to content/case-studies/<slug>.mdx behind
+    // app/notes/[slug]/page.tsx. A leftover app/notes/<slug>/page.mdx would
+    // win over the dynamic segment and render without the designed chrome.
     for (const e of experiments) {
-      const hasFile = existsSync(join(process.cwd(), "app", "notes", e.slug, "page.mdx"));
-      expect(hasFile, `${e.slug}: notes flag says ${e.notes}, file exists ${hasFile}`).toBe(e.notes);
+      const stale = join(process.cwd(), "app", "notes", e.slug, "page.mdx");
+      expect(existsSync(stale), `stale ${e.slug}/page.mdx`).toBe(false);
     }
   });
 
