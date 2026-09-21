@@ -1,41 +1,40 @@
-import type { Metadata } from "next";
-import { Bricolage_Grotesque, JetBrains_Mono, Newsreader } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { SmoothScroll } from "./components/SmoothScroll";
 
-/** Names and headings. Grotesque, slightly condensed, tightened as it grows. */
-const bricolage = Bricolage_Grotesque({
+const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
-  variable: "--font-bricolage",
-  display: "swap",
-});
-
-/** Reading. A serif, because the case studies are long enough to be read. */
-const newsreader = Newsreader({
-  subsets: ["latin"],
-  variable: "--font-newsreader",
-  display: "swap",
-});
-
-/** Reserved for measurements: labels, stack chips, reading captions, code. */
-const jetbrains = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains",
-  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Web Experiments",
+  title: "dan / experiments",
   description:
-    "A collection of personal web experiments exploring layout, motion, and interaction.",
+    "Mobile and web experiments by Emmanuel Ngulube — eleven React Native apps and two sites, each built to answer one question.",
+  metadataBase: new URL("https://experiments.dan-code.dev"),
+  openGraph: {
+    title: "dan / experiments",
+    description:
+      "Eleven React Native apps and two sites, each built to answer one question.",
+    type: "website",
+  },
+  twitter: { card: "summary_large_image", creator: "@Dan_code" },
 };
+
+export const viewport: Viewport = { colorScheme: "light" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${bricolage.variable} ${newsreader.variable} ${jetbrains.variable}`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body>{children}</body>
+      <body className="min-h-full flex flex-col">
+        <SmoothScroll />
+        {children}
+      </body>
     </html>
   );
 }
