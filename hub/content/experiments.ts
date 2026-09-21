@@ -18,8 +18,10 @@ export type Experiment = {
   year: number;
   status: Status;
   /**
-   * Web only. A different Next app builds this and it is copied in at the
-   * same path, so link with a plain <a> — a client-side navigation 404s.
+   * Where you can open the thing itself, for an experiment that has a site.
+   * Either a path on this host — a different Next app builds it and it is
+   * copied in at that path, so link with a plain <a>, since a client-side
+   * navigation would 404 — or an absolute URL when it is hosted elsewhere.
    */
   live?: string;
   /**
@@ -28,10 +30,16 @@ export type Experiment = {
    */
   folder: string;
   /**
-   * Mobile only. There is no live site; the source is the thing to see.
-   * Derived from `folder` — never written by hand.
+   * The source. Derived from `folder` and `sourceRepo` — never written by hand.
+   * Every experiment has one; it is the call to action for the ones with no
+   * site to open.
    */
-  repo?: string;
+  repo: string;
+  /**
+   * The repo `folder` sits in, when it is not the one implied by `platform`.
+   * An experiment kept in its own repo has an empty `folder` and names it here.
+   */
+  sourceRepo?: string;
   /** Overrides the last line of the run block where the default won't do. */
   run?: { command: string; note: string };
   media: { poster?: string; video?: string };
@@ -47,6 +55,10 @@ export const CATEGORIES: Category[] = [
 
 const MOBILE_REPO = "https://github.com/Justdan111/mobile-interaction";
 const WEB_REPO = "https://github.com/Justdan111/web-experiment";
+
+/** The repo an experiment's folder sits in, unless it names its own. */
+const repoFor = (e: { platform: Platform; sourceRepo?: string }) =>
+  e.sourceRepo ?? (e.platform === "mobile" ? MOBILE_REPO : WEB_REPO);
 
 /**
  * Encodes each path segment but keeps the separators: "aiagent/sora" is two
@@ -347,6 +359,36 @@ const entries: Omit<Experiment, "repo">[] = [
     ],
   },
   {
+    slug: "greyroom",
+    title: "Grey Room\u00b0",
+    blurb:
+      "A concept site for a fictional creative studio, built to find out how far scroll choreography and a hand-rolled 3D menu can carry an agency site's sense of craft.",
+    platform: "web",
+    category: "Motion",
+    tags: ["Next.js", "GSAP", "Lenis"],
+    year: 2026,
+    status: "live",
+    // Its own repo, and hosted on its own \u2014 not assembled into this site, so
+    // the live link leaves it rather than pointing at a path here.
+    sourceRepo: "https://github.com/Justdan111/grey-room",
+    folder: "",
+    live: "https://grey-room-eight.vercel.app",
+    media: {
+      video: "/videos/greyroom.mp4",
+      poster: "/posters/greyroom.webp",
+    },
+    notes: [
+      {
+        heading: "What it is",
+        body: "An agency site for modern consumer brands that does not exist. A hover-scrubbed video hero, a scroll-scrubbed portal that pins the layout and bleeds the page from paper through magenta to near-black, and a full-screen 3D menu carousel built from trigonometry rather than a library.",
+      },
+      {
+        heading: "How it's built",
+        body: "Next.js App Router, GSAP and Lenis, with no UI kit and no canned animation presets. Lenis is driven off GSAP's ticker so smooth scroll and every scrubbed animation read from one frame clock instead of two competing rAF loops. The menu carousel bypasses React state entirely on the 60fps path.",
+      },
+    ],
+  },
+  {
     slug: "verso",
     title: "Verso",
     blurb:
@@ -396,14 +438,15 @@ const entries: Omit<Experiment, "repo">[] = [
   },
 ];
 
-/** A mobile experiment's repo link is derived, so it cannot drift from folder. */
-export const experiments: Experiment[] = entries.map((entry) => ({
-  ...entry,
-  repo:
-    entry.platform === "mobile"
-      ? `${MOBILE_REPO}/tree/main/${encodePath(entry.folder)}`
-      : undefined,
-}));
+/** The repo link is derived, so it cannot drift from the folder. */
+export const experiments: Experiment[] = entries.map((entry) => {
+  const base = repoFor(entry);
+  return {
+    ...entry,
+    // An experiment that is its own repo has no folder to point into.
+    repo: entry.folder ? `${base}/tree/main/${encodePath(entry.folder)}` : base,
+  };
+});
 
 /** The experiment's permanent number, one-based. Independent of any filter. */
 export function numberOf(experiment: Experiment): number {
@@ -416,13 +459,14 @@ export function numberOf(experiment: Experiment): number {
  */
 export function runFor(experiment: Experiment) {
   const mobile = experiment.platform === "mobile";
-  const repo = mobile ? MOBILE_REPO : WEB_REPO;
+  const repo = repoFor(experiment);
+  const dir = cloneDir(repo);
 
   return {
     label: mobile ? "terminal · expo" : "terminal · next",
     lines: [
       `git clone ${repo}.git`,
-      `cd ${shellPath(`${cloneDir(repo)}/${experiment.folder}`)}`,
+      `cd ${shellPath(experiment.folder ? `${dir}/${experiment.folder}` : dir)}`,
       mobile ? "npm install" : "pnpm install",
       experiment.run?.command ?? (mobile ? "npm start" : "pnpm dev"),
     ],
@@ -430,7 +474,9 @@ export function runFor(experiment: Experiment) {
       experiment.run?.note ??
       (mobile
         ? "Then press i for the iOS simulator, a for Android, or scan the QR code with Expo Go. Use npm start rather than npx expo start — each app pins its own Metro port, and Expo Go caches projects by port."
-        : `It serves at localhost:3000${experiment.live} rather than the root, whatever Next's startup banner says.`),
+        : experiment.live?.startsWith("/")
+          ? `It serves at localhost:3000${experiment.live} rather than the root, whatever Next's startup banner says.`
+          : "It serves at localhost:3000, and has no basePath — it is its own site rather than one of the three assembled into this one."),
   };
 }
 

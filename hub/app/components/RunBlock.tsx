@@ -36,6 +36,14 @@ export function RunBlock({ experiment }: { experiment: Experiment }) {
   const { label, lines, note } = runFor(experiment);
   const mobile = experiment.platform === "mobile";
 
+  // A path is a page of this site; anything else is somewhere to be sent.
+  const here = experiment.live?.startsWith("/") ?? false;
+  const liveLabel = experiment.live
+    ? here
+      ? experiment.live
+      : `${new URL(experiment.live).hostname} ↗`
+    : "github ↗";
+
   return (
     <section className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-20">
       <div className="grid gap-10 lg:grid-cols-[1fr_17rem] lg:gap-16">
@@ -107,16 +115,16 @@ export function RunBlock({ experiment }: { experiment: Experiment }) {
             <dt className="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
               {experiment.live ? "Live" : "Source"}
             </dt>
-            <dd className="text-[15px] font-medium">
+            <dd className="min-w-0 text-[15px] font-medium">
               {/* Plain anchor, never next/link — see app/page.test.ts. */}
               <a
                 href={experiment.live ?? experiment.repo}
-                {...(experiment.live
+                {...(here
                   ? {}
                   : { target: "_blank", rel: "noreferrer" })}
-                className="underline decoration-border underline-offset-4 transition-colors hover:text-accent hover:decoration-accent"
+                className="block truncate underline decoration-border underline-offset-4 transition-colors hover:text-accent hover:decoration-accent"
               >
-                {experiment.live ? experiment.live : "github ↗"}
+                {liveLabel}
               </a>
             </dd>
           </div>

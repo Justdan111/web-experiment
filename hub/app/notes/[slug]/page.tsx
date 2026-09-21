@@ -36,12 +36,13 @@ export default async function NotePage({ params }: PageProps<"/notes/[slug]">) {
   const { title, blurb, platform, category, tags, year, notes, live, repo } =
     experiment;
 
-  // A web experiment has a live path; a mobile one has a repo. The data tests
-  // guarantee exactly one of the two, so there is always precisely one CTA.
+  // A web experiment has somewhere to open; a mobile one has only its source.
   const action = live
     ? { href: live, label: "View live" }
-    : { href: repo!, label: "View on GitHub" };
-  const outbound = !live;
+    : { href: repo, label: "View on GitHub" };
+  // Only a path on this host stays in the tab. An experiment hosted on its own
+  // is another site, and so is GitHub.
+  const outbound = !live?.startsWith("/");
 
 
   return (

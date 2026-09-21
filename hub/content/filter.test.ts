@@ -4,12 +4,12 @@ import { applyFilter, filterKey } from "./filter";
 
 describe("applyFilter", () => {
   it("returns everything for all", () => {
-    expect(applyFilter(experiments, { kind: "all" })).toHaveLength(13);
+    expect(applyFilter(experiments, { kind: "all" })).toHaveLength(14);
   });
 
   it("narrows to a platform", () => {
     const got = applyFilter(experiments, { kind: "platform", value: "web" });
-    expect(got).toHaveLength(2);
+    expect(got).toHaveLength(3);
     expect(got.every((e) => e.platform === "web")).toBe(true);
   });
 
