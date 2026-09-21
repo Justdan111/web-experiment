@@ -1,0 +1,7 @@
+body {
+  background: url(/verso/media/ok.jpg);
+}
+
+@font-face {
+  src: url(../media/font.woff2);
+}

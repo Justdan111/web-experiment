@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
-import { BASE_PATH } from "./app/lib/base-path";
 
+// The hub is served at the root, so it has no basePath. Its siblings do.
 const nextConfig: NextConfig = {
   output: "export",
-  basePath: BASE_PATH,
   trailingSlash: true,
   images: { unoptimized: true },
 };

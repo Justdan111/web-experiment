@@ -1,0 +1,13 @@
+{
+  "name": "web-experiments",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build-site.mjs",
+    "smoke": "scripts/smoke.sh",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.7"
+  },
+  "packageManager": "pnpm@10.17.0"
+}

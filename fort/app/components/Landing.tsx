@@ -8,6 +8,7 @@ import ParticleBall from "./ParticleBall";
 import RacketCursor from "./RacketCursor";
 import { COACHES, GALLERY, NAV, STATS, TESTIMONIALS } from "../content";
 import { openBooking } from "../booking/bus";
+import { asset } from "../lib/base-path";
 
 const useIsomorphicLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -384,7 +385,7 @@ export default function Landing() {
         <section className="ballscene" ref={ballScene}>
           <div className="ballscene-inner" ref={ballInner}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="bigball" ref={bigBall} src="/media/ball.png" alt="" />
+            <img className="bigball" ref={bigBall} src={asset("/media/ball.png")} alt="" />
             <h2 className="oneline" ref={oneLine}>
               All ages. All levels. One community.
             </h2>
@@ -416,7 +417,7 @@ export default function Landing() {
             </div>
             <div className="club-media reveal">
               <div className="arch">
-                <video src="/media/club.mp4" autoPlay muted loop playsInline />
+                <video src={asset("/media/club.mp4")} autoPlay muted loop playsInline />
               </div>
             </div>
           </div>
