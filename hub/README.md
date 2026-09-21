@@ -20,7 +20,7 @@ array, so an entry is the whole change.
   tags: ["Reanimated", "Skia"],
   year: 2026,
   status: "source",              // "live" | "source" | "wip"
-  repo: `${REPO}/newthing`,      // mobile: source. web: `live: "/newthing/"` instead
+  folder: "newthing",            // path inside its repo; repo link is derived
   media: {},                     // see below
   notes: [
     { heading: "What it is", body: "…" },
@@ -29,9 +29,43 @@ array, so an entry is the whole change.
 }
 ```
 
-A **web** experiment has `live` and no `repo`; a **mobile** experiment has
-`repo` and no `live`. `content/experiments.test.ts` enforces that, so a card can
-never offer a link it was not given.
+A **web** experiment has `live` (its path on this host); a **mobile** experiment
+has neither, and its `repo` link is derived from `folder`.
+`content/experiments.test.ts` enforces that split, so a card can never offer a
+link it was not given.
+
+## The run block
+
+Each detail page shows the four commands that get the experiment running, built
+by `runFor()` from `folder` — never written out per experiment, so they cannot
+drift from the data:
+
+```
+git clone <its repo>.git
+cd <clone dir>/<folder>          # quoted when the folder has a space in it
+npm install | pnpm install
+npm start   | pnpm dev
+```
+
+An app that needs something else overrides the last line and the note:
+
+```ts
+run: {
+  command: "npx expo run:ios",
+  note: "Widget Lab builds iOS widgets and Live Activities, so it needs a development build rather than Expo Go …",
+}
+```
+
+`folder` holds the **real directory name** — `"travel app"`, not
+`"travel%20app"`. `encodePath()` does the URL encoding for the GitHub link and
+`shellPath()` does the quoting for `cd`; writing an encoded folder breaks both.
+
+## More from the playground
+
+Below the run block, three related experiments — same category first, then the
+rest in order (`relatedTo()`). They show their **permanent** number via
+`numberOf()`, not a local 1–3: the grid renumbers within a filtered view, but
+this is a selection rather than a view, so `07` still means Sushi.
 
 ## Media
 

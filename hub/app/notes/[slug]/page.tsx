@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import { experiments } from "../../../content/experiments";
 import { Footer } from "../../components/Footer";
 import { MediaPlate } from "../../components/MediaPlate";
+import { MoreFromPlayground } from "../../components/MoreFromPlayground";
 import { Nav } from "../../components/Nav";
+import { RunBlock } from "../../components/RunBlock";
 import { SectionLabel } from "../../components/SectionLabel";
 import { ArrowUpRight } from "../../components/icons";
 
@@ -41,15 +43,13 @@ export default async function NotePage({ params }: PageProps<"/notes/[slug]">) {
     : { href: repo!, label: "View on GitHub" };
   const outbound = !live;
 
-  const prev = experiments[(index - 1 + experiments.length) % experiments.length];
-  const next = experiments[(index + 1) % experiments.length];
 
   return (
     <>
       <Nav />
 
       <main className="flex-1">
-        <article className="mx-auto max-w-3xl px-4 sm:px-6 pt-16 pb-8 sm:pt-24">
+        <article className="mx-auto max-w-3xl px-4 sm:px-6 pt-16 sm:pt-24">
           <SectionLabel>
             {platform} · {category} · {year}
           </SectionLabel>
@@ -106,39 +106,10 @@ export default async function NotePage({ params }: PageProps<"/notes/[slug]">) {
           </div>
         </article>
 
-        <nav
-          aria-label="More experiments"
-          className="mx-auto max-w-6xl px-4 sm:px-6 pb-24 sm:pb-32"
-        >
-          <div className="flex flex-wrap items-start justify-between gap-6 border-t border-border pt-8">
-            <a href={`/notes/${prev.slug}/`} className="group">
-              <span className="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                Previous
-              </span>
-              <div className="mt-1 text-xl font-semibold tracking-tight transition-colors group-hover:text-accent">
-                ← {prev.title}
-              </div>
-            </a>
+        <RunBlock experiment={experiment} />
 
-            <a href="/" className="group text-center">
-              <span className="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                Index
-              </span>
-              <div className="mt-1 text-xl font-semibold tracking-tight transition-colors group-hover:text-accent">
-                All experiments
-              </div>
-            </a>
+        <MoreFromPlayground experiment={experiment} />
 
-            <a href={`/notes/${next.slug}/`} className="group text-right">
-              <span className="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                Next
-              </span>
-              <div className="mt-1 text-xl font-semibold tracking-tight transition-colors group-hover:text-accent">
-                {next.title} →
-              </div>
-            </a>
-          </div>
-        </nav>
       </main>
 
       <Footer />

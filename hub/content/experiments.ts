@@ -22,8 +22,18 @@ export type Experiment = {
    * same path, so link with a plain <a> — a client-side navigation 404s.
    */
   live?: string;
-  /** Mobile only. There is no live site; the source is the thing to see. */
+  /**
+   * Path inside its repo. Differs from the slug where the app is nested or
+   * has a space in its directory name.
+   */
+  folder: string;
+  /**
+   * Mobile only. There is no live site; the source is the thing to see.
+   * Derived from `folder` — never written by hand.
+   */
   repo?: string;
+  /** Overrides the last line of the run block where the default won't do. */
+  run?: { command: string; note: string };
   media: { poster?: string; video?: string };
   notes: Note[];
 };
@@ -35,9 +45,23 @@ export const CATEGORIES: Category[] = [
   "Full flows",
 ];
 
-const REPO = "https://github.com/Justdan111/mobile-interaction/tree/main";
+const MOBILE_REPO = "https://github.com/Justdan111/mobile-interaction";
+const WEB_REPO = "https://github.com/Justdan111/web-experiment";
 
-export const experiments: Experiment[] = [
+/**
+ * Encodes each path segment but keeps the separators: "aiagent/sora" is two
+ * directories deep, while "travel app" is one directory with a space in it.
+ */
+const encodePath = (folder: string) =>
+  folder.split("/").map(encodeURIComponent).join("/");
+
+/** Quotes a path the shell would otherwise split into two arguments. */
+const shellPath = (path: string) => (/\s/.test(path) ? `"${path}"` : path);
+
+/** The clone directory — the last segment of the repo URL. */
+const cloneDir = (repo: string) => repo.slice(repo.lastIndexOf("/") + 1);
+
+const entries: Omit<Experiment, "repo">[] = [
   {
     slug: "moodlift",
     title: "Moodlift",
@@ -48,7 +72,7 @@ export const experiments: Experiment[] = [
     tags: ["Reanimated", "Expo Router", "SVG", "Haptics"],
     year: 2026,
     status: "source",
-    repo: `${REPO}/moodlift`,
+    folder: "moodlift",
     media: {},
     notes: [
       {
@@ -71,7 +95,11 @@ export const experiments: Experiment[] = [
     tags: ["expo-widgets", "SwiftUI", "Live Activities"],
     year: 2026,
     status: "source",
-    repo: `${REPO}/widget`,
+    folder: "widget",
+    run: {
+      command: "npx expo run:ios",
+      note: "Widget Lab builds iOS widgets and Live Activities, so it needs a development build rather than Expo Go — hence run:ios instead of start.",
+    },
     media: {},
     notes: [
       {
@@ -94,7 +122,7 @@ export const experiments: Experiment[] = [
     tags: ["Reanimated", "Liquid Glass", "SVG"],
     year: 2026,
     status: "source",
-    repo: `${REPO}/halftone`,
+    folder: "halftone",
     media: {},
     notes: [
       {
@@ -117,7 +145,7 @@ export const experiments: Experiment[] = [
     tags: ["SVG", "Reanimated", "NativeWind"],
     year: 2026,
     status: "source",
-    repo: `${REPO}/glucose`,
+    folder: "glucose",
     media: {},
     notes: [
       {
@@ -140,7 +168,7 @@ export const experiments: Experiment[] = [
     tags: ["Reanimated", "Gestures", "NativeWind"],
     year: 2026,
     status: "source",
-    repo: `${REPO}/rally`,
+    folder: "rally",
     media: {},
     notes: [
       {
@@ -163,7 +191,7 @@ export const experiments: Experiment[] = [
     tags: ["Reanimated", "Gestures", "expo-blur"],
     year: 2026,
     status: "source",
-    repo: `${REPO}/travel%20app`,
+    folder: "travel app",
     media: {},
     notes: [
       {
@@ -186,7 +214,7 @@ export const experiments: Experiment[] = [
     tags: ["Reanimated", "SVG", "NativeWind"],
     year: 2026,
     status: "source",
-    repo: `${REPO}/sushi`,
+    folder: "sushi",
     media: {},
     notes: [
       {
@@ -209,7 +237,7 @@ export const experiments: Experiment[] = [
     tags: ["Reanimated", "SVG", "Expo Router"],
     year: 2026,
     status: "source",
-    repo: `${REPO}/trackit`,
+    folder: "trackit",
     media: {},
     notes: [
       {
@@ -232,7 +260,7 @@ export const experiments: Experiment[] = [
     tags: ["Reanimated", "NativeWind", "Gradient"],
     year: 2026,
     status: "source",
-    repo: `${REPO}/aiagent/sora`,
+    folder: "aiagent/sora",
     media: {},
     notes: [
       {
@@ -255,7 +283,7 @@ export const experiments: Experiment[] = [
     tags: ["Reanimated", "SVG", "expo-image"],
     year: 2026,
     status: "source",
-    repo: `${REPO}/car/cars-proj`,
+    folder: "car/cars-proj",
     media: {},
     notes: [
       {
@@ -278,7 +306,7 @@ export const experiments: Experiment[] = [
     tags: ["Reanimated", "SVG", "Anton"],
     year: 2026,
     status: "source",
-    repo: `${REPO}/food/chompo`,
+    folder: "food/chompo",
     media: {},
     notes: [
       {
@@ -301,6 +329,7 @@ export const experiments: Experiment[] = [
     tags: ["Next.js", "GSAP", "Scroll"],
     year: 2026,
     status: "live",
+    folder: "verso",
     live: "/verso/",
     media: { poster: "/posters/verso.webp" },
     notes: [
@@ -324,6 +353,7 @@ export const experiments: Experiment[] = [
     tags: ["Next.js", "GSAP", "Booking"],
     year: 2026,
     status: "live",
+    folder: "fort",
     live: "/fort/",
     media: { poster: "/posters/fort.webp" },
     notes: [
@@ -338,6 +368,53 @@ export const experiments: Experiment[] = [
     ],
   },
 ];
+
+/** A mobile experiment's repo link is derived, so it cannot drift from folder. */
+export const experiments: Experiment[] = entries.map((entry) => ({
+  ...entry,
+  repo:
+    entry.platform === "mobile"
+      ? `${MOBILE_REPO}/tree/main/${encodePath(entry.folder)}`
+      : undefined,
+}));
+
+/** The experiment's permanent number, one-based. Independent of any filter. */
+export function numberOf(experiment: Experiment): number {
+  return experiments.findIndex((e) => e.slug === experiment.slug) + 1;
+}
+
+/**
+ * The four commands that get this experiment running locally, and the one
+ * thing you need to know afterwards.
+ */
+export function runFor(experiment: Experiment) {
+  const mobile = experiment.platform === "mobile";
+  const repo = mobile ? MOBILE_REPO : WEB_REPO;
+
+  return {
+    label: mobile ? "terminal · expo" : "terminal · next",
+    lines: [
+      `git clone ${repo}.git`,
+      `cd ${shellPath(`${cloneDir(repo)}/${experiment.folder}`)}`,
+      mobile ? "npm install" : "pnpm install",
+      experiment.run?.command ?? (mobile ? "npm start" : "pnpm dev"),
+    ],
+    note:
+      experiment.run?.note ??
+      (mobile
+        ? "Then press i for the iOS simulator, a for Android, or scan the QR code with Expo Go. Use npm start rather than npx expo start — each app pins its own Metro port, and Expo Go caches projects by port."
+        : `It serves at localhost:3000${experiment.live} rather than the root, whatever Next's startup banner says.`),
+  };
+}
+
+/** Up to `count` others, same category first, then the rest in order. */
+export function relatedTo(experiment: Experiment, count = 3): Experiment[] {
+  const others = experiments.filter((e) => e.slug !== experiment.slug);
+  return [
+    ...others.filter((e) => e.category === experiment.category),
+    ...others.filter((e) => e.category !== experiment.category),
+  ].slice(0, count);
+}
 
 export function byPlatform(platform: Platform): Experiment[] {
   return experiments.filter((e) => e.platform === platform);
