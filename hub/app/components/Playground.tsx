@@ -37,7 +37,7 @@ export function Playground() {
           shown={shown.length}
         />
 
-        <ul className="grid gap-x-6 gap-y-12 sm:grid-cols-2">
+        <ul className="grid min-w-0 gap-x-6 gap-y-12 sm:grid-cols-2">
           <AnimatePresence mode="popLayout" initial={false}>
             {shown.map((experiment, i) => (
               <ExperimentCard

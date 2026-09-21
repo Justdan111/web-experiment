@@ -74,7 +74,7 @@ export function FilterRail({
   };
 
   return (
-    <div className="lg:sticky lg:top-28 lg:self-start">
+    <div className="min-w-0 lg:sticky lg:top-28 lg:self-start">
       {/* Below lg the rail is one horizontally scrolling row of the same
           buttons — the group structure only reads as structure when stacked. */}
       <div className="-mx-4 flex gap-1 overflow-x-auto px-4 pb-2 lg:mx-0 lg:flex-col lg:overflow-visible lg:rounded-2xl lg:border lg:border-border lg:p-2 lg:pb-2">
@@ -90,13 +90,14 @@ export function FilterRail({
           </div>
         ))}
 
-        <p
-          aria-live="polite"
-          className="hidden border-t border-border px-3.5 pt-3 pb-1 font-mono text-xs text-muted-foreground lg:block"
-        >
-          Showing {shown} of {experiments.length}
-        </p>
       </div>
+
+      <p
+        aria-live="polite"
+        className="px-3.5 pt-2 font-mono text-xs text-muted-foreground lg:border-t lg:border-border lg:pt-3"
+      >
+        Showing {shown} of {experiments.length}
+      </p>
     </div>
   );
 }
