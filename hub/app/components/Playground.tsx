@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { experiments } from "../../content/experiments";
-import { applyFilter, filterKey, type Filter } from "../../content/filter";
+import { applyFilter, type Filter } from "../../content/filter";
 import { ExperimentCard } from "./ExperimentCard";
 import { FilterRail } from "./FilterRail";
 import { SectionLabel } from "./SectionLabel";

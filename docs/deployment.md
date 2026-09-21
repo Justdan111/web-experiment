@@ -11,10 +11,15 @@ All three apps are `output: "export"`, and `verso` and `fort` each set a
 in the right place, and assembling the site is a copy rather than a rewrite:
 
 ```
-hub    build -> hub/out         -> dist/
-verso  build -> verso/out/verso -> dist/verso/
-fort   build -> fort/out/fort   -> dist/fort/
+hub    build -> hub/out   -> dist/
+verso  build -> verso/out -> dist/verso/
+fort   build -> fort/out  -> dist/fort/
 ```
+
+An app's export root *is* its prefix: verso sets `basePath: "/verso"`, so the
+`out/index.html` it emits is the page served at `/verso/`. The whole of `out/`
+moves, never a subdirectory of it — which is exactly what the Docker images
+did with `COPY --from=build /app/out /usr/share/nginx/html/verso`.
 
 `scripts/build-site.mjs` does exactly that, and fails loudly if an app builds
 no export — which is what happens if someone drops `output: "export"` from a

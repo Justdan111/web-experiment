@@ -1,25 +1,44 @@
-# web experiments
+# dan / experiments
 
-Sites built to learn something specific. Each folder is a self-contained app
-with its own dependencies; each is published under one host.
+Mobile and web experiments — an annex of [dan-code.dev](https://dan-code.dev).
+Thirteen of them: eleven React Native apps and two sites, each built to answer
+one question and nothing more.
+
+The **hub** is the index and the case notes. `verso` and `fort` are the two web
+experiments, each a standalone Next app served under its own path. The eleven
+mobile experiments live in
+[mobile-interaction](https://github.com/Justdan111/mobile-interaction); the hub
+indexes them and links to their source.
 
 | Folder | Served at | What it is |
 | --- | --- | --- |
-| `hub` | `/` | The index of experiments, and a case study for each at `/notes/<slug>/` |
+| `hub` | `/` | The index, and a short detail page for each experiment at `/notes/<slug>/` |
 | `verso` | `/verso` | Editorial studio homepage — layout, type animation, scroll |
 | `fort` | `/fort` | Tennis club site — booking flow, cursor interaction |
 
-- **Deployment:** `docs/deployment.md`
-- **Design:** `docs/superpowers/specs/2026-08-24-experiments-hub-design.md`
+- **Deployment:** `docs/deployment.md` — one Vercel project, built from the root
+- **Design:** `docs/superpowers/specs/2026-09-21-experiments-hub-redesign-design.md`
 
-## Local
+## Running it
+
+The whole site, exactly as it deploys:
 
 ```bash
-cd verso && pnpm install && pnpm dev     # one experiment
-docker compose -f docker-compose.local.yml up --build   # all of them, path-routed
-./scripts/smoke.sh                                       # verify nothing 404s
+pnpm build                 # builds all three, assembles dist/
+npx serve dist -l 8080     # http://localhost:8080/, /verso/, /fort/
+./scripts/smoke.sh         # crawl it; fails on any non-200
 ```
 
-Running a single experiment serves it at its path prefix: `verso` at `http://localhost:3000/verso/`,
-`fort` at `http://localhost:3000/fort/`, `hub` at `http://localhost:3000/`.
-(Next's startup banner shows the root — ignore it for prefixed apps.)
+One app on its own, with hot reload:
+
+```bash
+cd hub && pnpm dev         # http://localhost:3000/
+cd verso && pnpm dev       # http://localhost:3000/verso/
+cd fort && pnpm dev        # http://localhost:3000/fort/
+```
+
+Next's startup banner shows the root — ignore it for the prefixed apps.
+
+## Adding an experiment
+
+One entry in `hub/content/experiments.ts`. See `hub/README.md`.

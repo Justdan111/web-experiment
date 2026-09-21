@@ -1,7 +1,7 @@
 /**
- * The URL prefix this experiment is served under. Equals the folder name and
- * the path Traefik routes to it. `next.config.ts` reads this, so there is one
- * place to change it.
+ * The URL prefix this experiment is served under. Equals the folder name, and
+ * the path `scripts/build-site.mjs` assembles this app into. `next.config.ts`
+ * reads it, so there is one place to change it.
  */
 export const BASE_PATH = "/fort";
 

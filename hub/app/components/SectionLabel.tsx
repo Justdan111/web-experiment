@@ -15,7 +15,7 @@ export function SectionLabel({
       )}
     >
       <span aria-hidden className="mr-1.5">
-        //
+        {"//"}
       </span>
       {children}
     </span>
