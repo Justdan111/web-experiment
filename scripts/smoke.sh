@@ -10,6 +10,8 @@
 # a new experiment is added.
 set -uo pipefail
 
+# Serve the assembled tree first:
+#   pnpm build && npx serve dist -l 8080
 BASE="${1:-http://localhost:8080}"
 fail=0
 
