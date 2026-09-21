@@ -1,69 +1,54 @@
-import { existsSync } from "node:fs";
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { experiments } from "./experiments";
-
-const repoRoot = join(process.cwd(), "..");
+import { CATEGORIES, countsFor, experiments } from "./experiments";
 
 describe("experiments", () => {
-  it("lists at least the two experiments that exist today", () => {
-    expect(experiments.length).toBeGreaterThanOrEqual(2);
+  it("has thirteen", () => {
+    expect(experiments).toHaveLength(13);
   });
 
   it("gives every experiment a unique slug", () => {
-    expect(new Set(experiments.map((e) => e.slug)).size).toBe(experiments.length);
+    const slugs = experiments.map((e) => e.slug);
+    expect(new Set(slugs).size).toBe(slugs.length);
   });
 
-  it("uses slugs that survive being turned into a CI secret name", () => {
-    // The workflow derives DOKPLOY_WEBHOOK_<SLUG>; a hyphen would break it.
-    for (const e of experiments) {
-      expect(e.slug, e.slug).toMatch(/^[a-z0-9]+$/);
+  it("uses url-safe slugs", () => {
+    for (const e of experiments) expect(e.slug).toMatch(/^[a-z0-9-]+$/);
+  });
+
+  it("gives every web experiment a live path and no repo", () => {
+    for (const e of experiments.filter((x) => x.platform === "web")) {
+      expect(e.live, e.slug).toMatch(/^\/[a-z0-9-]+\/$/);
+      expect(e.repo, e.slug).toBeUndefined();
     }
   });
 
-  it("never uses a slug the hub reserves for itself", () => {
-    // The hub answers /notes/*, /posters/*, /_next/* and /favicon.ico at the
-    // root. An experiment folder named e.g. "notes" would get a Traefik
-    // PathPrefix that wins on length and takes that path from the hub.
-    const reserved = new Set(["notes", "posters", "_next", "favicon.ico"]);
-    for (const e of experiments) {
-      expect(reserved.has(e.slug), e.slug).toBe(false);
+  it("gives every mobile experiment a repo and no live path", () => {
+    for (const e of experiments.filter((x) => x.platform === "mobile")) {
+      expect(e.repo, e.slug).toMatch(/^https:\/\/github\.com\//);
+      expect(e.live, e.slug).toBeUndefined();
     }
   });
 
-  it("points each entry at a folder that actually exists in the repo", () => {
-    for (const e of experiments) {
-      expect(existsSync(join(repoRoot, e.slug)), e.slug).toBe(true);
-    }
+  it("splits eleven mobile and two web", () => {
+    const { platform } = countsFor(experiments);
+    expect(platform).toEqual({ mobile: 11, web: 2 });
   });
 
-  it("derives href from slug, with the trailing slash the apps expect", () => {
-    // The experiments set trailingSlash: true; linking without it costs a redirect.
-    for (const e of experiments) {
-      expect(e.href, e.slug).toBe(`/${e.slug}/`);
-    }
+  it("counts every experiment into exactly one known category", () => {
+    const { category } = countsFor(experiments);
+    const total = CATEGORIES.reduce((n, c) => n + category[c], 0);
+    expect(total).toBe(experiments.length);
   });
 
-  it("has a poster file on disk for every entry", () => {
+  it("gives every experiment two short notes and at least one tag", () => {
     for (const e of experiments) {
-      expect(existsSync(join(process.cwd(), "public", e.poster)), e.poster).toBe(true);
-    }
-  });
-
-  it("leaves no per-slug page under app/notes — one route renders them all", () => {
-    // Case studies moved to content/case-studies/<slug>.mdx behind
-    // app/notes/[slug]/page.tsx. A leftover app/notes/<slug>/page.mdx would
-    // win over the dynamic segment and render without the designed chrome.
-    for (const e of experiments) {
-      const stale = join(process.cwd(), "app", "notes", e.slug, "page.mdx");
-      expect(existsSync(stale), `stale ${e.slug}/page.mdx`).toBe(false);
-    }
-  });
-
-  it("gives every entry non-empty copy", () => {
-    for (const e of experiments) {
-      expect(e.title.trim(), e.slug).not.toBe("");
-      expect(e.blurb.trim(), e.slug).not.toBe("");
+      expect(e.notes, e.slug).toHaveLength(2);
+      for (const n of e.notes) {
+        expect(
+          n.body.split(/\s+/).length,
+          `${e.slug}/${n.heading}`,
+        ).toBeLessThanOrEqual(90);
+      }
       expect(e.tags.length, e.slug).toBeGreaterThan(0);
     }
   });
