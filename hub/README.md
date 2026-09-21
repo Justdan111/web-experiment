@@ -60,6 +60,37 @@ run: {
 `"travel%20app"`. `encodePath()` does the URL encoding for the GitHub link and
 `shellPath()` does the quoting for `cd`; writing an encoded folder breaks both.
 
+## The featured rail
+
+`Recent` is a rail of three, pinned while the page scrolls past it
+(`FeaturedRail`). The focused card is full width and sharp; its neighbours
+narrow, blur and desaturate with distance. Every per-card value comes from one
+number:
+
+```
+focus = progress x (cards - 1)     // progress through the tall section
+d     = clamp(|i - focus|, 0, 1)
+width = lerp(maxW, minW, d)        // and blur, grayscale, opacity likewise
+```
+
+It is driven from scroll progress rather than from measured positions on
+purpose. Card widths decide the layout, so reading positions back to compute
+widths is a feedback loop through the layout engine, and it oscillates.
+
+A card is as wide as the viewport allows **but no taller than the stage** —
+those are different axes, and on a short wide window a 43vw card at 4:3 is
+taller than 68vh, which centres half the card behind the sticky nav.
+
+Dragging the rail scrolls the page rather than moving the rail on its own, so
+scroll stays the single source of truth. It goes through Lenis
+(`app/lib/lenis.ts`) rather than `window.scrollTo`, which the smoothing would
+otherwise undo mid-drag.
+
+The rail is `lg` and up only. Narrow screens, and anyone who asks for reduced
+motion, get the same three stacked instead — pinning the page and driving a
+carousel from the scroll is scroll-jacking, which is the thing that preference
+is asking you not to do. The rAF loop does not run in either case.
+
 ## More from the playground
 
 Below the run block, three related experiments — same category first, then the

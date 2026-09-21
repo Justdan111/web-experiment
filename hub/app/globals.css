@@ -61,6 +61,19 @@ body {
   border-radius: 4px;
 }
 
+/* The featured rail pins the page and drives a carousel from the scroll. That
+   is scroll-jacking, which is exactly what someone asking for reduced motion is
+   asking not to have — so they get the same stacked list narrow screens get. */
+@media (prefers-reduced-motion: reduce) {
+  [data-rail] {
+    display: none;
+  }
+
+  [data-rail-fallback] {
+    display: block;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

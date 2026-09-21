@@ -2,6 +2,8 @@
 
 import type { Experiment } from "../../content/experiments";
 
+const PLACEHOLDER_BG = "#2a2a2e";
+
 /**
  * A video when one has been supplied, a poster when only that exists, and
  * otherwise the slug set in mono on the card ground. The placeholder is the
@@ -41,12 +43,17 @@ export function MediaPlate({ experiment }: { experiment: Experiment }) {
     );
   }
 
+  // The portfolio puts its project media on this ground, and it is what makes
+  // a plate read as a plate rather than as a gap in the page — which matters
+  // most in the featured rail, where a near-white placeholder blurred to 5px
+  // on a white page vanishes completely.
   return (
     <div
       aria-hidden
-      className="absolute inset-0 flex items-center justify-center bg-card"
+      className="absolute inset-0 flex items-center justify-center"
+      style={{ background: PLACEHOLDER_BG }}
     >
-      <span className="font-mono text-xs uppercase tracking-[0.24em] text-muted-foreground">
+      <span className="font-mono text-xs uppercase tracking-[0.24em] text-white/40">
         {slug}
       </span>
     </div>

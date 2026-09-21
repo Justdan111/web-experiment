@@ -1,4 +1,5 @@
 import { experiments } from "../../content/experiments";
+import { FeaturedRail } from "./FeaturedRail";
 import { MediaPlate } from "./MediaPlate";
 import { Reveal, RevealItem, RevealStagger } from "./Reveal";
 import { SectionLabel } from "./SectionLabel";
@@ -16,14 +17,25 @@ const featured = FEATURED.map((slug) => {
 
 export function Featured() {
   return (
-    <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-8 sm:pb-16">
-      <Reveal>
-        <SectionLabel>Recent</SectionLabel>
-      </Reveal>
+    <section className="pb-8 sm:pb-16">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <Reveal>
+          <SectionLabel>Recent</SectionLabel>
+        </Reveal>
+      </div>
 
-      <RevealStagger className="mt-8 grid gap-10 md:grid-cols-3">
-        {featured.map((experiment) => (
-          <RevealItem key={experiment.slug}>
+      {/* The pinned rail needs room to travel and a pointer to drag it, so it
+          is desktop only. Narrow screens get the same three, stacked. */}
+      <div data-rail className="mt-8 hidden lg:block">
+        <FeaturedRail experiments={featured} />
+      </div>
+
+      {/* The attribute goes on a plain element: RevealStagger takes only
+          children, className and gap, so anything else is silently dropped. */}
+      <div data-rail-fallback className="lg:hidden">
+        <RevealStagger className="mx-auto mt-8 grid max-w-6xl gap-10 px-4 sm:grid-cols-2 sm:px-6">
+          {featured.map((experiment) => (
+            <RevealItem key={experiment.slug}>
             {/* Plain anchor, never next/link — see app/page.test.ts. */}
             <a href={`/notes/${experiment.slug}/`} className="group block">
               <div className="relative aspect-16/10 overflow-hidden rounded-3xl border border-border transition-colors group-hover:border-accent/40">
@@ -43,9 +55,10 @@ export function Featured() {
                 {experiment.blurb}
               </p>
             </a>
-          </RevealItem>
-        ))}
-      </RevealStagger>
+            </RevealItem>
+          ))}
+        </RevealStagger>
+      </div>
     </section>
   );
 }
