@@ -5,9 +5,9 @@ with its own dependencies; each is published under one host.
 
 | Folder | Served at | What it is |
 | --- | --- | --- |
-| `hub` | `/` | The index of experiments |
+| `hub` | `/` | The index of experiments, and a case study for each at `/notes/<slug>/` |
 | `verso` | `/verso` | Editorial studio homepage — layout, type animation, scroll |
-| `fort` | `/fort` | Padel club site — booking flow, cursor interaction |
+| `fort` | `/fort` | Tennis club site — booking flow, cursor interaction |
 
 - **Deployment:** `docs/deployment.md`
 - **Design:** `docs/superpowers/specs/2026-08-24-experiments-hub-design.md`
