@@ -101,19 +101,40 @@ this is a selection rather than a view, so `07` still means Sushi.
 ## Media
 
 ```
-public/media/<slug>.mp4      a screen recording, muted and looping
-public/posters/<slug>.webp   a still
+.media-source/videos/<name>.mp4   the 4K recording — gitignored, never shipped
+hub/public/videos/<slug>.mp4      the web-sized clip
+hub/public/posters/<slug>.webp    its first frame
 ```
 
-`MediaPlate` picks the first of the three it has: video, then poster, then a
-typographic placeholder on the card ground. The placeholder is the shipped
-state for an experiment with no clip yet, so adding one is a file plus a field:
+Drop a recording into `.media-source/videos/` at the repo root and run:
+
+```bash
+./scripts/optimise-media.sh      # needs ffmpeg and cwebp
+```
+
+It scales to 1280 wide, drops the audio (the clips are muted everywhere they
+are used), writes a `faststart` MP4 per slug and a poster beside it. The
+originals are ~3840x2160 and ~23MB each; the output is 1-2MB. A card renders at
+619px at most, so 1280 is still 2x on a retina screen.
+
+If a recording's filename is not the slug, add it to `slug_for()` in that
+script — `carproj` is `cars`, `trav` is `travel`.
+
+Then point the entry at them:
 
 ```ts
-media: { video: "/media/newthing.mp4", poster: "/posters/newthing.webp" }
+media: { video: "/videos/newthing.mp4", poster: "/posters/newthing.webp" }
 ```
 
-The poster is optional, but it is what shows while the video is still loading.
+`MediaPlate` picks the first of the three it has: clip, then poster, then a
+typographic placeholder on a dark ground. It plays only while on screen
+(`preload="none"` plus an IntersectionObserver), because the home page holds
+nineteen plates and nine distinct clips, and left alone they would all fetch
+and decode at once.
+
+`content/media.test.ts` checks every path resolves to a real file, that no clip
+on disk is unclaimed, and that none is over 4MB — which is what catches a
+source recording copied in by hand.
 
 ## The link rule
 

@@ -73,7 +73,10 @@ const entries: Omit<Experiment, "repo">[] = [
     year: 2026,
     status: "source",
     folder: "moodlift",
-    media: {},
+    media: {
+      video: "/videos/moodlift.mp4",
+      poster: "/posters/moodlift.webp",
+    },
     notes: [
       {
         heading: "What it is",
@@ -123,7 +126,10 @@ const entries: Omit<Experiment, "repo">[] = [
     year: 2026,
     status: "source",
     folder: "halftone",
-    media: {},
+    media: {
+      video: "/videos/halftone.mp4",
+      poster: "/posters/halftone.webp",
+    },
     notes: [
       {
         heading: "What it is",
@@ -169,7 +175,10 @@ const entries: Omit<Experiment, "repo">[] = [
     year: 2026,
     status: "source",
     folder: "rally",
-    media: {},
+    media: {
+      video: "/videos/rally.mp4",
+      poster: "/posters/rally.webp",
+    },
     notes: [
       {
         heading: "What it is",
@@ -192,7 +201,10 @@ const entries: Omit<Experiment, "repo">[] = [
     year: 2026,
     status: "source",
     folder: "travel app",
-    media: {},
+    media: {
+      video: "/videos/travel.mp4",
+      poster: "/posters/travel.webp",
+    },
     notes: [
       {
         heading: "What it is",
@@ -215,7 +227,10 @@ const entries: Omit<Experiment, "repo">[] = [
     year: 2026,
     status: "source",
     folder: "sushi",
-    media: {},
+    media: {
+      video: "/videos/sushi.mp4",
+      poster: "/posters/sushi.webp",
+    },
     notes: [
       {
         heading: "What it is",
@@ -238,7 +253,10 @@ const entries: Omit<Experiment, "repo">[] = [
     year: 2026,
     status: "source",
     folder: "trackit",
-    media: {},
+    media: {
+      video: "/videos/trackit.mp4",
+      poster: "/posters/trackit.webp",
+    },
     notes: [
       {
         heading: "What it is",
@@ -261,7 +279,10 @@ const entries: Omit<Experiment, "repo">[] = [
     year: 2026,
     status: "source",
     folder: "aiagent/sora",
-    media: {},
+    media: {
+      video: "/videos/sora.mp4",
+      poster: "/posters/sora.webp",
+    },
     notes: [
       {
         heading: "What it is",
@@ -284,7 +305,10 @@ const entries: Omit<Experiment, "repo">[] = [
     year: 2026,
     status: "source",
     folder: "car/cars-proj",
-    media: {},
+    media: {
+      video: "/videos/cars.mp4",
+      poster: "/posters/cars.webp",
+    },
     notes: [
       {
         heading: "What it is",
@@ -307,7 +331,10 @@ const entries: Omit<Experiment, "repo">[] = [
     year: 2026,
     status: "source",
     folder: "food/chompo",
-    media: {},
+    media: {
+      video: "/videos/chompo.mp4",
+      poster: "/posters/chompo.webp",
+    },
     notes: [
       {
         heading: "What it is",

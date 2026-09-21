@@ -52,3 +52,7 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
+
+# 4K source recordings. The web-sized versions in hub/public/videos are built
+# from these by scripts/optimise-media.sh and are what ships.
+.media-source/
