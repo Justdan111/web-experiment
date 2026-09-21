@@ -1,0 +1,10 @@
+**/node_modules
+**/.next
+**/out
+**/.env
+**/.env.*
+**/.media-staging
+**/.media-backup
+**/*.tsbuildinfo
+.git
+docs

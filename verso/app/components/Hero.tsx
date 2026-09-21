@@ -7,7 +7,7 @@ export default function Hero() {
     <section className="relative">
       <HeroReel />
 
-      <div className="mx-auto max-w-(--content) px-(--gutter) pt-24 pb-40 md:pt-32 md:pb-56">
+      <div className="mx-auto max-w-(--content) px-(--gutter) pt-24 pb-16 md:pt-32 md:pb-20">
         <SplitHeadline
           text={HERO.statement}
           className="max-w-[24ch] text-[32px] leading-[1.16] md:text-[40px] lg:max-w-[30ch] lg:text-[48px] lg:leading-14"

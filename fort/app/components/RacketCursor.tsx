@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { broadcastPointer } from "./pointer";
+import { asset } from "../lib/base-path";
 
 /** Replaces the system cursor with a little racket that trails the pointer. */
 export default function RacketCursor() {
@@ -47,7 +48,7 @@ export default function RacketCursor() {
     <img
       ref={ref}
       className="racket-cursor"
-      src="/media/racket-cursor.png"
+      src={asset("/media/racket-cursor.png")}
       alt=""
       aria-hidden="true"
     />
