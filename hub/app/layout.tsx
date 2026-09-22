@@ -2,6 +2,12 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SmoothScroll } from "./components/SmoothScroll";
+import { countsFor, experiments } from "../content/experiments";
+
+// Derived, so the description cannot go stale the way "two sites" did when a
+// third arrived.
+const { platform } = countsFor(experiments);
+const summary = `${platform.mobile} React Native apps and ${platform.web} sites, each built to answer one question.`;
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({
@@ -11,13 +17,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "dan / experiments",
-  description:
-    "Mobile and web experiments by Emmanuel Ngulube — eleven React Native apps and two sites, each built to answer one question.",
+  description: `Mobile and web experiments by Emmanuel Ngulube — ${summary}`,
   metadataBase: new URL("https://experiments.dan-code.dev"),
   openGraph: {
     title: "dan / experiments",
-    description:
-      "Eleven React Native apps and two sites, each built to answer one question.",
+    description: summary,
     type: "website",
   },
   twitter: { card: "summary_large_image", creator: "@Dan_code" },

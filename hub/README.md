@@ -29,9 +29,16 @@ array, so an entry is the whole change.
 }
 ```
 
-A **web** experiment has `live` (its path on this host); a **mobile** experiment
-has neither, and its `repo` link is derived from `folder`.
-`content/experiments.test.ts` enforces that split, so a card can never offer a
+Every experiment has a **`repo`**, derived from `folder`. A **web** one also
+has **`live`** — either a path on this host, for the ones assembled into this
+site, or an absolute URL for one hosted on its own (Grey Room°). A **mobile**
+one has no `live`: there is nothing to open.
+
+An experiment kept in its own repo names it with **`sourceRepo`** and leaves
+`folder` empty, which is what makes its clone command `cd grey-room` rather
+than `cd <clone>/<folder>`.
+
+`content/experiments.test.ts` enforces all of that, so a card can never offer a
 link it was not given.
 
 ## The run block

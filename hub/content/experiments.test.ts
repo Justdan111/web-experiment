@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { CATEGORIES, countsFor, experiments } from "./experiments";
 
 describe("experiments", () => {
-  it("has thirteen", () => {
-    expect(experiments).toHaveLength(13);
+  it("has fourteen", () => {
+    expect(experiments).toHaveLength(14);
   });
 
   it("gives every experiment a unique slug", () => {
@@ -15,23 +15,31 @@ describe("experiments", () => {
     for (const e of experiments) expect(e.slug).toMatch(/^[a-z0-9-]+$/);
   });
 
-  it("gives every web experiment a live path and no repo", () => {
-    for (const e of experiments.filter((x) => x.platform === "web")) {
-      expect(e.live, e.slug).toMatch(/^\/[a-z0-9-]+\/$/);
-      expect(e.repo, e.slug).toBeUndefined();
+  it("gives every experiment a source", () => {
+    for (const e of experiments) {
+      expect(e.repo, e.slug).toMatch(/^https:\/\/github\.com\//);
     }
   });
 
-  it("gives every mobile experiment a repo and no live path", () => {
+  it("gives every web experiment somewhere to open", () => {
+    // Either a path on this host, for the ones assembled into this site, or an
+    // absolute URL for one hosted on its own.
+    for (const e of experiments.filter((x) => x.platform === "web")) {
+      expect(e.live, e.slug).toBeTruthy();
+      expect(e.live, e.slug).toMatch(/^(\/[a-z0-9-]+\/|https:\/\/\S+)$/);
+    }
+  });
+
+  it("gives no mobile experiment a live link", () => {
+    // There is no site to open; the source is the thing to see.
     for (const e of experiments.filter((x) => x.platform === "mobile")) {
-      expect(e.repo, e.slug).toMatch(/^https:\/\/github\.com\//);
       expect(e.live, e.slug).toBeUndefined();
     }
   });
 
-  it("splits eleven mobile and two web", () => {
+  it("splits eleven mobile and three web", () => {
     const { platform } = countsFor(experiments);
-    expect(platform).toEqual({ mobile: 11, web: 2 });
+    expect(platform).toEqual({ mobile: 11, web: 3 });
   });
 
   it("counts every experiment into exactly one known category", () => {

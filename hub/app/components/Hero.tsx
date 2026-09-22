@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { experiments } from "../../content/experiments";
+import { countsFor, experiments } from "../../content/experiments";
 import { ArrowUpRight } from "./icons";
 import { SectionLabel } from "./SectionLabel";
 
@@ -31,6 +31,33 @@ const word = {
 const headingDone = 0.1 + headingWords.length * 0.06 + 0.5;
 
 const latest = experiments[0];
+
+// Spelled out, and derived: the copy said "two sites" for exactly as long as
+// there were two, and went stale the moment a third arrived.
+const WORDS = [
+  "no",
+  "one",
+  "two",
+  "three",
+  "four",
+  "five",
+  "six",
+  "seven",
+  "eight",
+  "nine",
+  "ten",
+  "eleven",
+  "twelve",
+  "thirteen",
+  "fourteen",
+];
+const { platform } = countsFor(experiments);
+const spell = (n: number) => WORDS[n] ?? String(n);
+/** It opens a sentence. */
+const Spell = (n: number) => {
+  const word = spell(n);
+  return word[0].toUpperCase() + word.slice(1);
+};
 
 const rail = [
   { label: "Status", value: "open for projects", dot: true },
@@ -77,8 +104,8 @@ export function Hero() {
           >
             dan / experiments is where I take one question — how should this
             gesture feel, how should this page move — and build the smallest
-            thing that answers it. Eleven React Native apps, two sites. Each one
-            standalone, each one open.
+            thing that answers it. {Spell(platform.mobile)} React Native apps,{" "}
+            {spell(platform.web)} sites. Each one standalone, each one open.
           </motion.p>
 
           <motion.div

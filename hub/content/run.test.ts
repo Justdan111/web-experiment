@@ -37,6 +37,16 @@ describe("runFor", () => {
     ]);
   });
 
+  it("clones an experiment's own repo, with no folder to step into", () => {
+    // Grey Room is not assembled into this site; it is its own repo and its
+    // own deployment, so there is no subdirectory after the clone.
+    expect(runFor(bySlug("greyroom")).lines.slice(0, 2)).toEqual([
+      "git clone https://github.com/Justdan111/grey-room.git",
+      "cd grey-room",
+    ]);
+    expect(bySlug("greyroom").repo).toBe("https://github.com/Justdan111/grey-room");
+  });
+
   it("uses the dev build for the one app Expo Go cannot run", () => {
     const run = runFor(bySlug("widget"));
     expect(run.lines.at(-1)).toBe("npx expo run:ios");
