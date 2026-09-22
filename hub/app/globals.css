@@ -61,15 +61,20 @@ body {
   border-radius: 4px;
 }
 
-/* The featured rail pins the page and drives a carousel from the scroll. That
-   is scroll-jacking, which is exactly what someone asking for reduced motion is
-   asking not to have — so they get the same stacked list narrow screens get. */
+/* The desktop featured rail pins the page and drives a carousel from the
+   scroll. That is scroll-jacking, which is exactly what someone asking for
+   reduced motion is asking not to have, so it is replaced by a stacked list.
+
+   The narrow-screen rail is a plain scroller moved by the reader's own thumb,
+   so it stays; FeaturedSwipe drops only the blur and shrink laid over it. */
 @media (prefers-reduced-motion: reduce) {
   [data-rail] {
     display: none;
   }
+}
 
-  [data-rail-fallback] {
+@media (prefers-reduced-motion: reduce) and (min-width: 64rem) {
+  [data-rail-fallback][hidden] {
     display: block;
   }
 }
