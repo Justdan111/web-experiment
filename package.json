@@ -9,5 +9,8 @@
   "devDependencies": {
     "vitest": "^3.2.7"
   },
-  "packageManager": "pnpm@10.17.0"
+  "packageManager": "pnpm@10.17.0",
+  "engines": {
+    "node": ">=20.9"
+  }
 }
