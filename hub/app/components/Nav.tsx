@@ -59,7 +59,7 @@ export function Nav() {
         >
           <a href="/" className="flex flex-col leading-tight">
             <span className="text-[15px] font-semibold tracking-tight text-muted-foreground">
-              dan
+              Dan
             </span>
             <span className="text-[15px] font-semibold tracking-tight">
               experiments
