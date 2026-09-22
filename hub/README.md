@@ -93,10 +93,22 @@ scroll stays the single source of truth. It goes through Lenis
 (`app/lib/lenis.ts`) rather than `window.scrollTo`, which the smoothing would
 otherwise undo mid-drag.
 
-The rail is `lg` and up only. Narrow screens, and anyone who asks for reduced
-motion, get the same three stacked instead — pinning the page and driving a
-carousel from the scroll is scroll-jacking, which is the thing that preference
-is asking you not to do. The rAF loop does not run in either case.
+Below `lg` the same three become `FeaturedSwipe`: a native overflow scroller
+with snap points, moved with a thumb rather than by scrolling the page. Same
+focus effect, no extra page height, and it inherits the platform's own momentum
+and rubber-banding rather than reimplementing them.
+
+The two differ in one way that matters. The desktop rail interpolates each
+card's **width**, which is safe because it is driven by scroll progress. The
+swipe rail reads values back from live positions, so it keeps widths fixed and
+shrinks with a **transform** — a changing width would feed the measurement it
+was derived from.
+
+Reduced motion takes the pinned rail away and puts the stacked list in its
+place, because pinning the page and driving a carousel from the scroll is
+scroll-jacking. The swipe rail stays, since the reader moves it themselves;
+it just drops the blur and shrink laid over it. The desktop rAF loop does not
+run in either case.
 
 ## More from the playground
 

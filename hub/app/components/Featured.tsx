@@ -1,5 +1,6 @@
 import { experiments } from "../../content/experiments";
 import { FeaturedRail } from "./FeaturedRail";
+import { FeaturedSwipe } from "./FeaturedSwipe";
 import { MediaPlate } from "./MediaPlate";
 import { Reveal, RevealItem, RevealStagger } from "./Reveal";
 import { SectionLabel } from "./SectionLabel";
@@ -31,15 +32,20 @@ export function Featured() {
         </Reveal>
       </div>
 
-      {/* The pinned rail needs room to travel and a pointer to drag it, so it
-          is desktop only. Narrow screens get the same three, stacked. */}
+      {/* Two rails, one idea. The pinned one needs room to travel and a
+          pointer to drag it; the narrow one is moved with a thumb. */}
       <div data-rail className="mt-8 hidden lg:block">
         <FeaturedRail experiments={featured} />
       </div>
 
-      {/* The attribute goes on a plain element: RevealStagger takes only
-          children, className and gap, so anything else is silently dropped. */}
-      <div data-rail-fallback className="lg:hidden">
+      <div data-swipe className="mt-8 lg:hidden">
+        <FeaturedSwipe experiments={featured} />
+      </div>
+
+      {/* Shown only when reduced motion has taken the pinned rail away. The
+          attribute goes on a plain element: RevealStagger takes only children,
+          className and gap, so anything else is silently dropped. */}
+      <div data-rail-fallback hidden>
         <RevealStagger className="mx-auto mt-8 grid max-w-6xl gap-10 px-4 sm:grid-cols-2 sm:px-6">
           {featured.map((experiment) => (
             <RevealItem key={experiment.slug}>
