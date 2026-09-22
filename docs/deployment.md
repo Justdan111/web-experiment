@@ -41,11 +41,42 @@ One project, from the repo root.
 | Install command | `pnpm install --ignore-scripts` |
 
 `vercel.json` already sets all of these, so the dashboard should need no edits.
+`.node-version` pins Node 22, because nothing else in the repo did and the
+version Vercel picks otherwise depends on when the project was created.
 The root install is only for the repo's own devDependencies — the build script
 installs each app's dependencies itself, with `--frozen-lockfile`.
 
 For a custom domain, point `experiments.<domain>` at the project in Vercel's
 Domains tab. There is no certificate step; Vercel issues one.
+
+## When a build fails
+
+`scripts/build-site.mjs` builds three apps in a row, so the first thing to
+establish is which one broke. It prints a block naming the app and the step:
+
+```
+FAILED: verso — build
+  command:  pnpm build
+  in:       /vercel/path0/verso
+  exit:     1
+
+The real error is in verso's own output above this block.
+```
+
+The actual error is always in that app's own output, above the block — a bare
+`Command failed: pnpm build` with a stack trace into `build-site.mjs` is the
+wrapper, not the cause.
+
+To reproduce Vercel locally, build from a clean clone rather than your working
+tree, since a working tree has `node_modules` and build caches that hide
+dependency problems:
+
+```bash
+git clone --depth 1 --branch <branch> <repo> /tmp/repro
+cd /tmp/repro
+CI=true pnpm install --ignore-scripts
+CI=true pnpm build
+```
 
 ## What has been verified, and what hasn't
 

@@ -24,16 +24,41 @@ const apps = [
   { name: "fort", to: "fort", base: "/fort" },
 ];
 
-const run = (cmd, args, cwd) =>
-  execFileSync(cmd, args, { cwd, stdio: "inherit", env: process.env });
+/**
+ * Runs a command, and on failure says which app and which step broke rather
+ * than leaving a bare "Command failed: pnpm build" and a stack trace pointing
+ * at this file. Three apps build here; a log that does not name one is a log
+ * you cannot act on.
+ */
+const run = (cmd, args, cwd, app, step) => {
+  try {
+    execFileSync(cmd, args, { cwd, stdio: "inherit", env: process.env });
+  } catch (error) {
+    console.error(
+      [
+        "",
+        "\u2500".repeat(64),
+        `FAILED: ${app} \u2014 ${step}`,
+        `  command:  ${cmd} ${args.join(" ")}`,
+        `  in:       ${cwd}`,
+        `  exit:     ${error.status ?? "unknown"}`,
+        "",
+        `The real error is in ${app}'s own output above this block.`,
+        "\u2500".repeat(64),
+        "",
+      ].join("\n"),
+    );
+    process.exit(1);
+  }
+};
 
 rmSync(dist, { recursive: true, force: true });
 
 for (const app of apps) {
   const cwd = join(root, app.name);
   console.log(`\n── ${app.name} ──`);
-  run("pnpm", ["install", "--frozen-lockfile"], cwd);
-  run("pnpm", ["build"], cwd);
+  run("pnpm", ["install", "--frozen-lockfile"], cwd, app.name, "install");
+  run("pnpm", ["build"], cwd, app.name, "build");
 
   const out = join(cwd, "out");
   if (!existsSync(out)) {
@@ -44,7 +69,13 @@ for (const app of apps) {
   // The Docker images ran this per image, and an image could not exist with
   // assets escaping its prefix. Keep that guarantee here: a root-absolute URL
   // outside the app's own prefix resolves against a sibling app and 404s.
-  run("node", [join(root, "scripts", "audit-export.mjs"), out, app.base], root);
+  run(
+    "node",
+    [join(root, "scripts", "audit-export.mjs"), out, app.base],
+    root,
+    app.name,
+    "asset audit",
+  );
 
   cpSync(out, join(dist, app.to), { recursive: true });
 }
