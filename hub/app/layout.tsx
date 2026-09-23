@@ -18,7 +18,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "dan / experiments",
   description: `Mobile and web experiments by Emmanuel Ngulube — ${summary}`,
-  metadataBase: new URL("https://experiments.dan-code.dev"),
+  // The deployment's own URL. experiments.dan-code.dev was aspirational and
+  // does not resolve; change this if that subdomain is ever pointed here.
+  metadataBase: new URL("https://web-experiment-two-chi.vercel.app"),
   openGraph: {
     title: "dan / experiments",
     description: summary,
