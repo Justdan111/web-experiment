@@ -115,7 +115,10 @@ const entries: Omit<Experiment, "repo">[] = [
       command: "npx expo run:ios",
       note: "Widget Lab builds iOS widgets and Live Activities, so it needs a development build rather than Expo Go — hence run:ios instead of start.",
     },
-    media: {},
+    media: {
+      video: "/videos/widget.mp4",
+      poster: "/posters/widget.webp",
+    },
     notes: [
       {
         heading: "What it is",
