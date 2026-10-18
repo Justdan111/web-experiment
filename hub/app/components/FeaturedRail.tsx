@@ -6,26 +6,7 @@ import { getLenis } from "../lib/lenis";
 import { MediaPlate } from "./MediaPlate";
 import { ArrowUpRight } from "./icons";
 
-/**
- * A rail of featured experiments, pinned while the page scrolls past it. The
- * focused card is full width and sharp; its neighbours narrow, blur and
- * desaturate with distance.
- *
- * Every per-card value is a function of one number — `focus`, a fractional
- * index derived from how far the page has scrolled through the section:
- *
- *   focus  = progress × (cards - 1)
- *   d      = clamp(|i - focus|, 0, 1)
- *   width  = lerp(MAX_W, MIN_W, d)
- *
- * Driving it from progress rather than from measured positions matters: card
- * widths decide the layout, so reading positions back to compute widths is a
- * feedback loop through the layout engine, which oscillates. This has no loop.
- *
- * `focus` is eased toward its target each frame instead of being snapped, so a
- * drag and a scroll produce the same motion rather than one feeling looser
- * than the other.
- */
+
 
 const MAX_W = 0.43; // of viewport width, when focused — the reference's 620/1440
 const MIN_W = 0.08; // when a full index away
@@ -52,9 +33,6 @@ export function FeaturedRail({ experiments }: { experiments: Experiment[] }) {
     if (!section || !track) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    // The rail only exists from `lg` up. Below that it is display:none, so its
-    // measurements are all zero and the loop would burn a frame every 16ms
-    // computing nothing.
     const wide = window.matchMedia("(min-width: 1024px)");
     const count = experiments.length;
     let focus = 0;
@@ -77,10 +55,7 @@ export function FeaturedRail({ experiments }: { experiments: Experiment[] }) {
     const paint = () => {
       const vw = window.innerWidth;
 
-      // A card is as wide as the viewport allows, but no taller than the
-      // stage. Those are different axes: on a short, wide window 43vw of
-      // 4:3 plate is taller than 68vh, and a card that overflows the stage
-      // gets centred half of it behind the sticky nav. Height wins.
+  
       const stage = track.closest<HTMLElement>("[data-stage]");
       const caption = cardRefs.current[0]?.querySelector<HTMLElement>("[data-caption]");
       const chrome = (caption?.offsetHeight ?? 0) + GAP;

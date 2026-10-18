@@ -12,11 +12,7 @@ const STATUS_LABEL: Record<Experiment["status"], string> = {
   wip: "In progress",
 };
 
-/**
- * The whole card is one anchor, to the detail page. The live site and the
- * GitHub link live on that page, so the card has exactly one target and a tap
- * anywhere on it does the same thing.
- */
+
 export function ExperimentCard({
   experiment,
   index,
