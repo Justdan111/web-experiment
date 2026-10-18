@@ -6,15 +6,7 @@ import { Reveal, RevealItem, RevealStagger } from "./Reveal";
 import { SectionLabel } from "./SectionLabel";
 import { ArrowUpRight } from "./icons";
 
-/**
- * Three by slug rather than by index, so reordering the data can't reshuffle
- * what the top of the page leads with.
- *
- * Every one of them must have a clip: this rail is the first thing on the page
- * and it plays its cards large, so a placeholder here reads as an unfinished
- * site rather than as an experiment awaiting a recording.
- * `content/featured.test.ts` holds that line.
- */
+
 const FEATURED = ["moodlift", "sushi", "halftone"];
 
 const featured = FEATURED.map((slug) => {
@@ -32,8 +24,6 @@ export function Featured() {
         </Reveal>
       </div>
 
-      {/* Two rails, one idea. The pinned one needs room to travel and a
-          pointer to drag it; the narrow one is moved with a thumb. */}
       <div data-rail className="mt-8 hidden lg:block">
         <FeaturedRail experiments={featured} />
       </div>
