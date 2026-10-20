@@ -5,21 +5,7 @@ import type { Experiment } from "../../content/experiments";
 import { MediaPlate } from "./MediaPlate";
 import { ArrowUpRight } from "./icons";
 
-/**
- * The narrow-screen Recent rail. Same focus effect as the pinned desktop one —
- * the centred card is sharp, its neighbours blur and shrink — but you move it
- * with your thumb rather than by scrolling the page.
- *
- * A native overflow scroller with snap points, not a hand-rolled gesture: it
- * inherits momentum, rubber-banding and the platform's own feel for free, and
- * it adds nothing to the page's height.
- *
- * Card widths are fixed here and the shrink is a transform. On the desktop rail
- * the width itself interpolates, which is fine because that rail is driven by
- * scroll progress rather than by measurement — here the values are read back
- * from live positions, so anything that changed the layout would feed into
- * itself. Scale does not.
- */
+
 
 const CARD_VW = 78; // of viewport width
 const GAP = 16; // px
