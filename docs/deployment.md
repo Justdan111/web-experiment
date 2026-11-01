@@ -2,7 +2,8 @@
 
 Everything is one host. The hub answers `/`, each experiment answers its own
 path prefix — `/verso/`, `/fort/`. That used to be three Docker containers
-behind an nginx proxy; it is now one static tree, assembled at build time.
+behind an nginx proxy; it is now one static tree, assembled at build time and
+served by the root Docker image.
 
 ## How it works
 
@@ -28,6 +29,46 @@ no export — which is what happens if someone drops `output: "export"` from a
 Every URL is the same as it was under Docker. Neither sibling app needed a
 change.
 
+## Docker and Dokploy
+
+The root `Dockerfile` builds all three apps in a Node 22 build stage and serves
+the assembled `dist/` directory from Nginx on port 80. `nginx.conf` serves
+directory indexes, so the exported trailing-slash routes work directly:
+
+```
+/             -> dist/index.html
+/verso/       -> dist/verso/index.html
+/fort/        -> dist/fort/index.html
+```
+
+In Dokploy, create an **Application** from the repository root and select the
+**Dockerfile** build type:
+
+| Setting | Value |
+| --- | --- |
+| Repository | `Justdan111/web-experiment` |
+| Branch | `main` |
+| Root directory | `/` |
+| Dockerfile | `Dockerfile` |
+| Container port | `80` |
+
+No install, build, or start command is needed in Dokploy; Docker runs the
+commands in the image. Add `experiments.dan-code.dev` under the application's
+**Domains** tab, with path `/` and HTTPS enabled.
+
+At the DNS provider for `dan-code.dev`, create an `A` record named
+`experiments` pointing to the Dokploy server's public IP. Once it resolves,
+Dokploy's reverse proxy can issue the HTTPS certificate.
+
+To test the image locally:
+
+```bash
+docker build -t web-experiments .
+docker run --rm -p 8080:80 web-experiments
+```
+
+Then open `http://localhost:8080/`, `/verso/`, and `/fort/`.
+
 ## Vercel
 
 One project, from the repo root.
@@ -46,8 +87,8 @@ version Vercel picks otherwise depends on when the project was created.
 The root install is only for the repo's own devDependencies — the build script
 installs each app's dependencies itself, with `--frozen-lockfile`.
 
-For a custom domain, point `experiments.<domain>` at the project in Vercel's
-Domains tab. There is no certificate step; Vercel issues one.
+For a custom domain on Vercel, point `experiments.<domain>` at the project in
+Vercel's Domains tab. There is no certificate step; Vercel issues one.
 
 ## When a build fails
 
