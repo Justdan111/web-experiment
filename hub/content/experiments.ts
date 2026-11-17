@@ -75,6 +75,32 @@ const cloneDir = (repo: string) => repo.slice(repo.lastIndexOf("/") + 1);
 
 const entries: Omit<Experiment, "repo">[] = [
   {
+    slug: "packsy",
+    title: "Packsy",
+    blurb:
+      "A parcel tracker whose active shipments sit in a stack. Swipe the front card up and it lifts off, the next parcel rises with its own route, and the barcode beneath re-encodes for it.",
+    platform: "mobile",
+    category: "Gestures",
+    tags: ["Gesture Handler", "Reanimated", "SVG", "Expo 58"],
+    year: 2026,
+    status: "source",
+    folder: "packsy",
+    media: {
+      video: "/videos/packsy.mp4",
+      poster: "/posters/packsy.webp",
+    },
+    notes: [
+      {
+        heading: "What it is",
+        body: "Seven screens from a parcel-tracking concept: an onboarding where the headline and parcel pill land in sequence, Home with its stack of sun, iris and coral cards, a package list, a route timeline, a three-step shipment form, and a map you can pinch and pan. Drag the front card up and it tilts away; let go past the line and the next shipment, Warsaw to Paris or Lagos to Abuja, settles in.",
+      },
+      {
+        heading: "How it's built",
+        body: "Expo 58 with the Gesture Handler 3 hooks API. One shared value drives the whole stack: the front card follows it, each card behind rises a slot and fades its face in, and the thrown card slips in again at the back. The barcode is real Code 128, checked bar for bar against python-barcode, and the map is a seeded SVG city, not tiles.",
+      },
+    ],
+  },
+  {
     slug: "moodlift",
     title: "Moodlift",
     blurb:

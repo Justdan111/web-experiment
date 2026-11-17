@@ -1,11 +1,11 @@
 # dan / experiments
 
 Mobile and web experiments — an annex of [dan-code.dev](https://dan-code.dev).
-Thirteen of them: eleven React Native apps and two sites, each built to answer
+Fifteen of them: twelve React Native apps and three sites, each built to answer
 one question and nothing more.
 
 The **hub** is the index and the case notes. `verso` and `fort` are the two web
-experiments, each a standalone Next app served under its own path. The eleven
+experiments, each a standalone Next app served under its own path. The twelve
 mobile experiments live in
 [mobile-interaction](https://github.com/Justdan111/mobile-interaction); the hub
 indexes them and links to their source.

@@ -8,7 +8,8 @@
 # most, so 1280 wide is still 2x on a retina screen, and the clips are muted
 # everywhere they are used — hence -an. Rerun after adding a recording.
 #
-#   ./scripts/optimise-media.sh
+#   ./scripts/optimise-media.sh            # every recording
+#   ./scripts/optimise-media.sh pecksy     # just these source stems
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
@@ -16,12 +17,13 @@ src="$root/.media-source/videos"
 out="$root/hub/public/videos"
 posters="$root/hub/public/posters"
 
-# Recording filename -> experiment slug. Most match; two do not.
+# Recording filename -> experiment slug. Most match; three do not.
 # A case, not an associative array: macOS ships bash 3.2, which has none.
 slug_for() {
   case "$1" in
     carproj) echo cars ;;
     trav) echo travel ;;
+    pecksy) echo packsy ;;
     *) echo "$1" ;;
   esac
 }
@@ -31,7 +33,17 @@ trap 'rm -rf "$tmp"' EXIT
 
 mkdir -p "$out" "$posters"
 
-for f in "$src"/*.mp4; do
+# With arguments, only those recordings; re-encoding all of them for one new
+# clip takes minutes and rewrites every committed file for no change.
+if [ "$#" -gt 0 ]; then
+  files=()
+  for stem in "$@"; do files+=("$src/$stem.mp4"); done
+else
+  files=("$src"/*.mp4)
+fi
+
+for f in "${files[@]}"; do
+  [ -f "$f" ] || { echo "no such recording: $f" >&2; exit 1; }
   stem="$(basename "$f" .mp4)"
   slug="$(slug_for "$stem")"
 
