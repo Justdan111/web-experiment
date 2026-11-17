@@ -50,6 +50,7 @@ const WORDS = [
   "twelve",
   "thirteen",
   "fourteen",
+  "fifteen",
 ];
 const { platform } = countsFor(experiments);
 const spell = (n: number) => WORDS[n] ?? String(n);

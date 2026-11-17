@@ -7,7 +7,7 @@ import { SectionLabel } from "./SectionLabel";
 import { ArrowUpRight } from "./icons";
 
 
-const FEATURED = ["moodlift", "sushi", "halftone"];
+const FEATURED = ["packsy", "moodlift", "halftone"];
 
 const featured = FEATURED.map((slug) => {
   const experiment = experiments.find((e) => e.slug === slug);
