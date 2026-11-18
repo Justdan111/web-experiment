@@ -258,9 +258,14 @@ export function FeaturedRail({ experiments }: { experiments: Experiment[] }) {
                   <span className="truncate text-sm font-medium text-background">
                     {experiment.title}
                   </span>
-                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground">
+                  <a
+                    href={`/notes/${experiment.slug}/`}
+                    className="inline-flex shrink-0 items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground"
+                    draggable={false}
+                    aria-label={`View ${experiment.title} details`}
+                  >
                     view <ArrowUpRight width={12} height={12} />
-                  </span>
+                  </a>
                 </div>
 
                 {/* Plain anchor, never next/link — see app/page.test.ts. */}
