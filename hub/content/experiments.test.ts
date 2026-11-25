@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { CATEGORIES, countsFor, experiments } from "./experiments";
 
 describe("experiments", () => {
-  it("has fifteen", () => {
-    expect(experiments).toHaveLength(15);
+  it("has sixteen", () => {
+    expect(experiments).toHaveLength(16);
   });
 
   it("gives every experiment a unique slug", () => {
@@ -37,9 +37,9 @@ describe("experiments", () => {
     }
   });
 
-  it("splits twelve mobile and three web", () => {
+  it("splits thirteen mobile and three web", () => {
     const { platform } = countsFor(experiments);
-    expect(platform).toEqual({ mobile: 12, web: 3 });
+    expect(platform).toEqual({ mobile: 13, web: 3 });
   });
 
   it("counts every experiment into exactly one known category", () => {

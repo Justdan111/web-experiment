@@ -4,7 +4,7 @@ import { applyFilter, filterKey } from "./filter";
 
 describe("applyFilter", () => {
   it("returns everything for all", () => {
-    expect(applyFilter(experiments, { kind: "all" })).toHaveLength(15);
+    expect(applyFilter(experiments, { kind: "all" })).toHaveLength(16);
   });
 
   it("narrows to a platform", () => {

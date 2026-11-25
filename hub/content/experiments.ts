@@ -75,6 +75,29 @@ const cloneDir = (repo: string) => repo.slice(repo.lastIndexOf("/") + 1);
 
 const entries: Omit<Experiment, "repo">[] = [
   {
+    slug: "makko",
+    title: "makko",
+    blurb:
+      "A social feed where every card arrives through a window that opens from narrow to full frame. Switch tabs or scroll a video and the next one rises from the bottom edge, cropped rather than scaled.",
+    platform: "mobile",
+    category: "Motion",
+    tags: ["Reanimated", "Gesture Handler", "expo-video", "Expo 58"],
+    year: 2026,
+    status: "source",
+    folder: "makko",
+    media: {},
+    notes: [
+      {
+        heading: "What it is",
+        body: "A social content app in two parts. Onboarding: a cut-out hero ringed by chat bubbles, a topic grid that bumps and checks as you tap, and a notification ruler that snaps per unit with a haptic tick. Then the feed: All as a masonry, Photos and Videos as full-width cards with double-tap to like, and a topic sheet whose rows arrive spread out and close up as it rises.",
+      },
+      {
+        heading: "How it's built",
+        body: "The motion was matched frame by frame to screen recordings of the original design. Cards are revealed, not scaled: the picture stays full size behind a window that widens to the frame. Every tab stays mounted so a switch never waits on a render, and videos turn pages on a fixed timeline instead of the flick's momentum, so the old clip leaves before the next one rises.",
+      },
+    ],
+  },
+  {
     slug: "packsy",
     title: "Packsy",
     blurb:
